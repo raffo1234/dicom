@@ -2,7 +2,8 @@ import Uploader from "@/components/Uploader";
 import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 // import DicomDataReader from "@/components/DicomDataReader";
-import DicomMetadataUpload from "@/components/DicomUploadForm";
+import DicomMetadataUpload from "@/components/DicomMetadataUpload";
+import DicomMetadataUploadLargeFile from "@/components/DicomMetadataUploadLargeFile";
 
 export default async function Page() {
   const session = await auth();
@@ -25,6 +26,8 @@ export default async function Page() {
       {/* <DicomDataReader /> */}
 
       <DicomMetadataUpload />
+
+      <DicomMetadataUploadLargeFile />
     </>
   );
 }
