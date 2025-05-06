@@ -68,7 +68,7 @@ export default async function ProfilePopover() {
               </li>
               <li>
                 <Link
-                  href="/admin/property"
+                  href="/admin/dicoms"
                   className="flex gap-3.5 items-center py-2 px-6 hover:bg-gray-50"
                 >
                   <Icon icon="solar:settings-minimalistic-broken" />

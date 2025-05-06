@@ -1,7 +1,7 @@
 import Uploader from "@/components/Uploader";
 import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
-import DicomMetadataUploadLargeFile from "@/components/DicomMetadataUploadLargeFile";
+// import DicomMetadataUploadLargeFile from "@/components/DicomMetadataUploadLargeFile";
 
 export default async function Page() {
   const session = await auth();
@@ -19,9 +19,14 @@ export default async function Page() {
 
   return (
     <>
-      <h1 className="mb-6 font-semibold text-lg block">Dicom</h1>
+      <h1 className="mb-6 font-semibold text-lg block">
+        Upload Dicom{" "}
+        <span className="text-sm text-gray-500 font-normal">
+          (Zip with .dcim files)
+        </span>
+      </h1>
       <Uploader userId={userId} />
-      <DicomMetadataUploadLargeFile />
+      {/* <DicomMetadataUploadLargeFile /> */}
     </>
   );
 }

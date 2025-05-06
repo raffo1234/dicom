@@ -9,8 +9,13 @@ import { usePathname } from "next/navigation";
 const pages = [
   {
     href: "/admin/dicom",
-    title: "File Dicom",
+    title: "Upload Dicom",
     iconName: "solar:cloud-upload-broken",
+  },
+  {
+    href: "/admin/dicoms",
+    title: "Dicoms",
+    iconName: "solar:bones-broken",
   },
   {
     href: "/admin/users",

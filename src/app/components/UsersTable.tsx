@@ -1,21 +1,21 @@
 import DeleteUser from "@/components/DeleteUser";
 import EditUser from "@/components/EditUser";
 import { UserType } from "@/types/userType";
-import { Icon } from "@iconify/react";
+// import { Icon } from "@iconify/react";
 import Image from "next/image";
-import Link from "next/link";
+// import Link from "next/link";
 
 export default function UsersTable({ users }: { users: UserType[] | null }) {
   return (
     <div className="max-w-[1200px] mx-auto w-full">
-      <h1 className="mb-6 font-semibold text-lg block">Usuarios</h1>
+      <h1 className="mb-6 font-semibold text-lg block">Users</h1>
       <div
         className="grid gap-3"
         style={{
           gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))",
         }}
       >
-        <Link
+        {/* <Link
           href="/admin/users/add"
           title="Agregar Usuario"
           className="border-dashed bg-white border border-gray-200 hover:bg-gray-50 rounded-2xl p-4 flex hover:text-cyan-500 justify-center items-center"
@@ -28,7 +28,7 @@ export default function UsersTable({ users }: { users: UserType[] | null }) {
             />
             <span>Agregar Usuario</span>
           </span>
-        </Link>
+        </Link> */}
         {users?.map(({ first_name, last_name, id, role, image_url }) => {
           return (
             <div
