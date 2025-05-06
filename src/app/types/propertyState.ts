@@ -1,0 +1,30 @@
+export enum PropertyState {
+  DRAFT = "BORRADOR",
+  PENDING = "EN REVISIÓN",
+  ACTIVE = "PUBLICADO",
+}
+
+export enum PropertyType {
+  APARTMENT = "DEPARTAMENTOS",
+  HOUSE = "CASAS",
+}
+
+export enum PropertyPhase {
+  PLANOS = "PLANOS",
+  CONSTRUCCION = "EN CONSTRUCCIÓN",
+  READY = "ENTREGA INMEDIATA",
+}
+
+export enum Permissions {
+  EDITAR_INMUEBLE = "EDITAR_INMUEBLE",
+  VER_FAVORITOS = "VER_FAVORITOS",
+  CREAR_INMUEBLE = "CREAR_INMUEBLE",
+  DAR_ME_GUSTA = "DAR_ME_GUSTA",
+  CAMBIAR_ESTADO = "CAMBIAR_ESTADO",
+  ELIMINAR_INMUEBLE = "ELIMINAR_INMUEBLE",
+}
+
+export enum PropertyCurrency {
+  SOLES = "SOLES",
+  DOLARES = "DOLARES",
+}

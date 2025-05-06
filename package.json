@@ -1,0 +1,44 @@
+{
+  "name": "casamia",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.49.4",
+    "next": "15.3.1",
+    "next-auth": "^5.0.0-beta.27",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.54.2",
+    "react-number-format": "^5.4.4",
+    "swr": "^2.3.3",
+    "text-mask-addons": "^3.8.0",
+    "uuid": "^11.1.0",
+    "zod": "^3.24.2",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@hookform/resolvers": "^5.0.1",
+    "@iconify-icon/react": "^3.0.0",
+    "@iconify-json/solar": "^1.2.2",
+    "@iconify/react": "^6.0.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "antd": "^5.24.9",
+    "date-fns": "^4.1.0",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.1",
+    "react-dropzone": "^14.3.8",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

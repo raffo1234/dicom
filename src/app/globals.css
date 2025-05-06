@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* group-hover does not work on mobile devices */
+.dropdown-parent:hover .dropdown-child {
+  opacity: 100;
+  visibility: visible;
+}
