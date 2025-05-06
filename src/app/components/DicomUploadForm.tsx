@@ -1,21 +1,21 @@
 "use client";
 
 // pages/upload-dicom.js or components/DicomUploadForm.js
-import React, { useState } from "react";
+import React, { ChangeEvent, useState } from "react";
 
 function DicomMetadataUpload() {
-  const [selectedFile, setSelectedFile] = useState(null);
+  // const [selectedFile, setSelectedFile] = useState(null);
   const [metadata, setMetadata] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
-    setMetadata(null);
-    setError(null);
-  };
+  // const handleFileChange = (event) => {
+  //   setSelectedFile(event.target.files[0]);
+  //   setMetadata(null);
+  //   setError(null);
+  // };
 
-  const handleUpload = async (event) => {
+  const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     // setSelectedFile(event.target.files[0]);
     // if (!selectedFile) {
     //   setError("Please select a zipped DICOM file.");
@@ -26,10 +26,8 @@ function DicomMetadataUpload() {
     setError(null);
 
     const formData = new FormData();
-    formData.append("dicomZipFile", event.target.files[0]); // 'dicomZipFile' is the key expected by the API route
-
-    // console.log(formData);
-    // return;
+    if (event.target.files)
+      formData.append("dicomZipFile", event.target.files[0]); // 'dicomZipFile' is the key expected by the API route
 
     try {
       const headers = new Headers();
@@ -52,7 +50,7 @@ function DicomMetadataUpload() {
       setMetadata(data.metadata); // Assuming the API returns { metadata: {...} }
     } catch (err) {
       console.error("Upload failed:", err);
-      setError(err.message);
+      setError(err as string);
     } finally {
       setLoading(false);
     }
@@ -61,10 +59,15 @@ function DicomMetadataUpload() {
   return (
     <div>
       <h1>Upload Zipped DICOM to Read Metadata</h1>
-      <input type="file" accept=".zip" onChange={handleUpload} />
-      <button onClick={handleUpload} disabled={!selectedFile || loading}>
+      <input
+        type="file"
+        accept=".zip"
+        disabled={loading}
+        onChange={handleUpload}
+      />
+      {/* <button onClick={handleUpload} disabled={!selectedFile || loading}>
         {loading ? "Processing..." : "Read Metadata"}
-      </button>
+      </button> */}
 
       {error && (
         <div style={{ color: "red", marginTop: "10px" }}>

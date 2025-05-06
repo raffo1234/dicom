@@ -74,6 +74,7 @@ const DicomDataReader: React.FC = () => {
         try {
           cornerstone.disable(element);
         } catch (e) {
+          console.error(e);
           // Ignorar errores si el elemento no fue habilitado
         }
       }

@@ -1,18 +1,18 @@
-import { supabase } from "@/lib/supabase";
-import { UserType } from "@/types/userType";
+// import { supabase } from "@/lib/supabase";
+// import { UserType } from "@/types/userType";
 import Link from "next/link";
 
 export default async function Page() {
-  async function insertData(data: UserType) {
-    const { error } = await supabase.from("user").insert([data]);
-    if (error) {
-      console.error("Error inserting data:", error);
-      return { success: false, error: error.message };
-    }
-    return { success: true };
-  }
+  // async function insertData(data: UserType) {
+  //   const { error } = await supabase.from("user").insert([data]);
+  //   if (error) {
+  //     console.error("Error inserting data:", error);
+  //     return { success: false, error: error.message };
+  //   }
+  //   return { success: true };
+  // }
 
-  let insertResult;
+  // let insertResult;
 
   //   const formData = await Astro.request.formData();
   //   const newUser: User = {

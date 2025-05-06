@@ -1,8 +1,8 @@
 // pages/api/read-dicom-metadata.ts
-import formidable, { File, Fields } from "formidable";
+// import formidable, { File, Fields } from "formidable";
 import JSZip from "jszip";
 import dicomParser from "dicom-parser"; // Or dcmjs, etc.
-import { readFileSync } from "fs";
+// import { readFileSync } from "fs";
 import { Buffer } from "buffer";
 
 // --- Define Interfaces for API Response ---
@@ -16,14 +16,6 @@ interface DicomMetadataResponse {
   [key: string]: any; // Allow adding more tags easily
 }
 
-interface SuccessResponse {
-  metadata: DicomMetadataResponse;
-}
-
-interface ErrorResponse {
-  error: string;
-  details?: string;
-}
 // --- End Interfaces ---
 
 export const config = {
@@ -46,7 +38,7 @@ export async function POST(req: Request) {
   // console.log(body);
 
   // e.g. Insert new user into your DB
-  const newUser = { id: Date.now(), name: "hola" };
+  // const newUser = { id: Date.now(), name: "hola" };
 
   // return new Response(JSON.stringify(newUser), {
   //   status: 201,
@@ -54,10 +46,10 @@ export async function POST(req: Request) {
   // });
 
   // Initialize formidable
-  const form = formidable({
-    // You might add options here, e.g., limits for file size
-    // maxFileSize: 100 * 1024 * 1024, // Example: 100MB
-  });
+  // const form = formidable({
+  //   // You might add options here, e.g., limits for file size
+  //   // maxFileSize: 100 * 1024 * 1024, // Example: 100MB
+  // });
 
   try {
     // Parse the incoming form data. Formidable's parse handles the stream from req.
@@ -181,7 +173,7 @@ export async function POST(req: Request) {
       let dataSet: any; // Use any for the parser result if specific types are hard to get
       try {
         dataSet = dicomParser.parseDicom(byteArray);
-      } catch (parseError: any) {
+      } catch (parseError) {
         console.error("DICOM parsing failed:", parseError);
         // Return 400 if DICOM parsing fails
         // return res.status(400).json({
@@ -191,7 +183,7 @@ export async function POST(req: Request) {
         return new Response(
           JSON.stringify({
             error: "Failed to parse DICOM file.",
-            details: parseError.message,
+            details: "Failed to parse DICOM file.", //parseError.message,
           }),
           {
             status: 400,
@@ -225,7 +217,7 @@ export async function POST(req: Request) {
         }
       );
     }
-  } catch (error: any) {
+  } catch (error) {
     // Catch any other unexpected errors during the process
     console.error("Error processing DICOM file:", error);
     // Return 500 for internal server errors
@@ -237,7 +229,7 @@ export async function POST(req: Request) {
     return new Response(
       JSON.stringify({
         error: "Internal server error processing file.",
-        details: error.message,
+        details: "Internal server error processing file.", //error.message,
       }),
       {
         status: 500,
