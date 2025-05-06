@@ -1,3 +1,5 @@
+"use client";
+
 import { supabase } from "@/lib/supabase";
 import React, { useCallback, useState, type ChangeEvent } from "react";
 import { v4 as uuidv4 } from "uuid";
@@ -6,15 +8,15 @@ import { Icon } from "@iconify/react";
 import { useDropzone } from "react-dropzone";
 
 interface ImageUploaderProps {
-  propertyId: string;
+  userId: string | undefined;
   onUploadSuccess?: (imageUrl: string) => void;
 }
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({
-  propertyId,
+  userId,
   onUploadSuccess,
 }) => {
-  const bucketName = "property-images";
+  const bucketName = "dicoms";
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -30,12 +32,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   const handleUpload = async () => {
     if (!file) {
-      setError("Please select an image file.");
+      setError("Please select an Dicom file.");
       return;
     }
 
-    if (!propertyId) {
-      setError("Property ID is missing.");
+    if (!userId) {
+      setError("User ID is missing.");
       return;
     }
 
@@ -45,7 +47,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
     const fileExt = file.name.split(".").pop();
     const fileName = `${uuidv4()}.${fileExt}`;
-    const filePath = `${propertyId}/${fileName}`;
+    const filePath = `${userId}/${fileName}`;
 
     try {
       const { error: uploadError } = await supabase.storage
@@ -68,14 +70,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       }
 
       const { error: insertError } = await supabase
-        .from("property_image")
-        .insert([{ image_url: publicUrl, property_id: propertyId }]);
+        .from("user_dicom")
+        .insert([{ dicom_url: publicUrl, user_id: userId }]);
 
       if (insertError) {
         throw insertError;
       }
 
-      setMessage("Image uploaded and associated successfully!");
+      setMessage("Dicom uploaded and associated successfully!");
       setFile(null);
       if (onUploadSuccess) {
         onUploadSuccess(publicUrl);
@@ -107,7 +109,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       <div
         {...getRootProps()}
         // htmlFor="dropzone-file"
-        className="flex flex-col group items-center justify-center py-9 w-full border border-gray-300 border-dashed rounded-2xl cursor-pointer bg-gray-50 "
+        className="flex flex-col group items-center justify-center py-9 w-full border border-gray-300 border-dashed rounded-2xl cursor-pointer bg-gray-50"
       >
         <Icon
           icon="solar:cloud-upload-broken"
@@ -132,18 +134,18 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         type="button"
         disabled={uploading || !file}
         onClick={handleUpload}
-        label={uploading ? "Cargando..." : "Cargar Imagen"}
+        label={uploading ? "Cargando..." : "Cargar Archivo"}
       />
       {error && <p className="error-message">Error: {error}</p>}
       {message && <p className="success-message">Success: {message}</p>}
 
-      {file && !message && !error && (
+      {/* {file && !message && !error && (
         <img
           src={URL.createObjectURL(file)}
           alt="Imagen Seleccionada"
           style={{ maxWidth: "200px", marginTop: "10px" }}
         />
-      )}
+      )} */}
     </>
   );
 };

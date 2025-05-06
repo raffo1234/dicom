@@ -14,7 +14,7 @@ type Profile = {
 
 export default async function syncUserWithDatabase(
   userSession: UserSession,
-  profile: Profile,
+  profile: Profile
 ) {
   const userId = userSession.id;
   const userEmail = userSession.email;
@@ -32,14 +32,14 @@ export default async function syncUserWithDatabase(
     if (selectError && selectError.code !== "PGRST116") {
       console.error(
         "syncUserWithDatabase: Error checking user existence:",
-        selectError,
+        selectError
       );
       return true;
     }
 
     if (data) {
       console.log(
-        `syncUserWithDatabase: User with ID ${userId} already exists in custom table. Checking for updates...`,
+        `syncUserWithDatabase: User with ID ${userId} already exists in custom table. Checking for updates...`
       );
       const updates: {
         provider_id?: string;
@@ -73,7 +73,7 @@ export default async function syncUserWithDatabase(
       if (Object.keys(updates).length > 0) {
         console.log(
           `syncUserWithDatabase: Updating user ${userId} with:`,
-          updates,
+          updates
         );
         const { error: updateError } = await supabase
           .from("user")
@@ -83,19 +83,19 @@ export default async function syncUserWithDatabase(
         if (updateError) {
           console.error(
             "syncUserWithDatabase: Error updating user data:",
-            updateError,
+            updateError
           );
         } else {
           console.log(`syncUserWithDatabase: User data updated for ${userId}.`);
         }
       } else {
         console.log(
-          `syncUserWithDatabase: No updates needed for user ${userId}.`,
+          `syncUserWithDatabase: No updates needed for user ${userId}.`
         );
       }
     } else {
       console.log(
-        `syncUserWithDatabase: User with ID ${userId} not found in custom table. Inserting new user...`,
+        `syncUserWithDatabase: User with ID ${userId} not found in custom table. Inserting new user...`
       );
 
       const insertData = {
@@ -116,18 +116,18 @@ export default async function syncUserWithDatabase(
       if (insertError) {
         console.error(
           "syncUserWithDatabase: Error inserting new user into custom table:",
-          insertError,
+          insertError
         );
       } else {
         console.log(
-          `syncUserWithDatabase: New user inserted into custom table with ID ${userId}.`,
+          `syncUserWithDatabase: New user inserted into custom table with ID ${userId}.`
         );
       }
     }
   } catch (error) {
     console.error(
       "syncUserWithDatabase: An unexpected error occurred during user sync:",
-      error,
+      error
     );
     return true;
   } finally {

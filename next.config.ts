@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
       new URL("https://lh3.googleusercontent.com/**"),
     ],
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "100mb",
+    },
+  },
 };
 
 export default nextConfig;

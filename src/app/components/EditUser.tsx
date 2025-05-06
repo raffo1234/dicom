@@ -23,7 +23,8 @@ async function fetcher(userId: string) {
 type Inputs = {
   username: string;
   email: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   role_id: string;
 };
 
@@ -89,14 +90,34 @@ export default function EditUser({ userId }: { userId: string }) {
             <form onSubmit={handleSubmit(onSubmit)} id="editUser">
               <fieldset className="flex flex-col gap-4">
                 <div>
-                  <label htmlFor="name" className="inline-block mb-2 text-sm">
+                  <label
+                    htmlFor="first_name"
+                    className="inline-block mb-2 text-sm"
+                  >
                     Nombre
                   </label>
                   <input
                     type="text"
-                    id="name"
-                    {...register("name")}
+                    id="first_name"
+                    {...register("first_name")}
                     required
+                    disabled
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-cyan-100  focus:border-cyan-500"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="last_name"
+                    className="inline-block mb-2 text-sm"
+                  >
+                    Apellido
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    {...register("last_name")}
+                    required
+                    disabled
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-cyan-100  focus:border-cyan-500"
                   />
                 </div>
@@ -113,6 +134,7 @@ export default function EditUser({ userId }: { userId: string }) {
                     id="username"
                     {...register("username")}
                     required
+                    disabled
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-cyan-100  focus:border-cyan-500"
                   />
                 </div>

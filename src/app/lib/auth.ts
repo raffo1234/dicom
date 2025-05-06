@@ -1,6 +1,6 @@
-// auth.ts
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import syncUserWithDatabase from "@/lib/syncUserWithDatabase";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -17,8 +17,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  // Optional: Add callbacks (jwt, session, signIn, redirect) for customization
   callbacks: {
+    async signIn({ user, profile }) {
+      console.log("auth-astro signIn callback triggered", { user });
+
+      if (user && profile) {
+        await syncUserWithDatabase(user, profile);
+      }
+
+      return true;
+    },
     async jwt({ token, account, profile }) {
       // Data from Google profile is available here on initial sign-in
       if (account) {
@@ -30,7 +38,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      // Add data from the token to the session
       if (token) {
         session.user.id = token.id as string; // Assuming you set user.id in jwt callback
         // session.accessToken = token.accessToken; // Example: expose access token to session
@@ -43,10 +50,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: "jwt",
   },
   // Optional: Specify custom pages (like a custom sign-in page)
-  // pages: {
-  //   signIn: "/login", // Redirect to /login if not authenticated
-  //   // error: '/auth/error',
-  // },
+  pages: {
+    signIn: "/", // Redirect to /login if not authenticated
+  },
   // Optional: Enable debug mode in development
-  // debug: process.env.NODE_ENV === "development",
+  debug: process.env.NODE_ENV === "development",
 });

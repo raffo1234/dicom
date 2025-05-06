@@ -8,6 +8,11 @@ import { usePathname } from "next/navigation";
 
 const pages = [
   {
+    href: "/admin/dicom",
+    title: "File Dicom",
+    iconName: "solar:cloud-upload-broken",
+  },
+  {
     href: "/admin/users",
     title: "Usuarios",
     iconName: "solar:user-linear",

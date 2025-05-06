@@ -29,7 +29,7 @@ export default function UsersTable({ users }: { users: UserType[] | null }) {
             <span>Agregar Usuario</span>
           </span>
         </Link>
-        {users?.map(({ name, id, role, image_url }) => {
+        {users?.map(({ first_name, last_name, id, role, image_url }) => {
           return (
             <div
               key={id}
@@ -38,16 +38,16 @@ export default function UsersTable({ users }: { users: UserType[] | null }) {
               <Image
                 src={image_url}
                 className="rounded-full mb-3 mx-auto bg-gray-100"
-                alt={name || id}
+                alt={first_name || id}
                 width={44}
                 height={44}
-                title={name}
+                title={first_name}
               />
               <div
                 className="font-semibold w-full mb-1 text-center truncate"
-                title={name}
+                title={first_name}
               >
-                {name}
+                {first_name} {last_name}
               </div>
               <div className="text-sm text-gray-500 w-full text-center mb-4">
                 {role?.name}

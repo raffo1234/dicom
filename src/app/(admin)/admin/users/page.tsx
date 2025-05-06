@@ -9,7 +9,8 @@ export default async function Page() {
       `
       id,
       image_url,
-      name,
+      first_name,
+      last_name,
       username,
       email,
       role_id,
