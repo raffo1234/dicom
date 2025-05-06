@@ -1,19 +1,9 @@
+// import { AdapterUser } from "next-auth/adapters";
 import { supabase } from "./supabase";
-
-type UserSession = {
-  id: string;
-  email: string;
-  name: string;
-  image: string;
-};
-
-type Profile = {
-  given_name: string;
-  family_name: string;
-};
+import { Profile, User } from "next-auth";
 
 export default async function syncUserWithDatabase(
-  userSession: UserSession,
+  userSession: User,
   profile: Profile
 ) {
   const userId = userSession.id;
