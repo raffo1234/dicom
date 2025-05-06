@@ -1,8 +1,6 @@
 import Uploader from "@/components/Uploader";
 import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
-// import DicomDataReader from "@/components/DicomDataReader";
-import DicomMetadataUpload from "@/components/DicomMetadataUpload";
 import DicomMetadataUploadLargeFile from "@/components/DicomMetadataUploadLargeFile";
 
 export default async function Page() {
@@ -23,10 +21,6 @@ export default async function Page() {
     <>
       <h1 className="mb-6 font-semibold text-lg block">Dicom</h1>
       <Uploader userId={userId} />
-      {/* <DicomDataReader /> */}
-
-      <DicomMetadataUpload />
-
       <DicomMetadataUploadLargeFile />
     </>
   );

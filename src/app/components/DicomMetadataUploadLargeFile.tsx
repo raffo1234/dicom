@@ -96,7 +96,6 @@ function DicomMetadataUpload() {
           // E.g., Manufacturer: dataSet.string('x00080070')
           // E.g., Study Instance UID: dataSet.string('x0020000D')
         };
-        console.log(extractedMetadata);
         setMetadata(extractedMetadata);
       } catch (parseError) {
         console.error("DICOM parsing failed:", parseError);

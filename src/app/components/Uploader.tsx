@@ -98,9 +98,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   }, []);
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
-    accept: {
-      "image/*": [],
-    },
+    // accept: {
+    //   "application/zip": [],
+    // },
     maxFiles: 1,
   });
 
