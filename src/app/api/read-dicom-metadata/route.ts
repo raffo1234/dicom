@@ -13,7 +13,7 @@ interface DicomMetadataResponse {
   seriesDescription?: string;
   modality?: string;
   studyDate?: string;
-  [key: string]: any; // Allow adding more tags easily
+  [key: string]: string | undefined; // Allow adding more tags easily
 }
 
 // --- End Interfaces ---
@@ -168,9 +168,17 @@ export async function POST(req: Request) {
       const arrayBuffer: ArrayBuffer = await dicomFile.async("arraybuffer");
       const byteArray: Uint8Array = new Uint8Array(arrayBuffer);
 
+      interface DicomDataSet {
+        string: (tag: string) => string | undefined;
+        // Add other methods if you use them, e.g.:
+        // int16: (tag: string) => number | undefined;
+        // sequence: (tag: string) => { items: Array<DicomDataSet | any> } | undefined;
+        // ...
+      }
+
       // Parse the DICOM data using dicomParser.
       // Wrap in try-catch as parsing can fail on invalid DICOM.
-      let dataSet: any; // Use any for the parser result if specific types are hard to get
+      let dataSet: DicomDataSet; // Use any for the parser result if specific types are hard to get
       try {
         dataSet = dicomParser.parseDicom(byteArray);
       } catch (parseError) {
