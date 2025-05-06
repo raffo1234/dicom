@@ -7,7 +7,7 @@ import dicomParser from "dicom-parser"; // Or dcmjs, etc.
 import { Buffer } from "buffer";
 
 function DicomMetadataUpload() {
-  const [metadata, setMetadata] = useState(null);
+  const [metadata, setMetadata] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -96,7 +96,8 @@ function DicomMetadataUpload() {
           // E.g., Manufacturer: dataSet.string('x00080070')
           // E.g., Study Instance UID: dataSet.string('x0020000D')
         };
-        console.log({ extractedMetadata });
+        console.log(extractedMetadata);
+        setMetadata(extractedMetadata);
       } catch (parseError) {
         console.error("DICOM parsing failed:", parseError);
       }
