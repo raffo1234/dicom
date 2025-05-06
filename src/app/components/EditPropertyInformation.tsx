@@ -147,10 +147,7 @@ export default function EditPropertyInformation({
           <div className="flex-1 flex flex-col gap-7">
             <div className="flex p-7 flex-col gap-4 border border-gray-100 rounded-xl bg-white">
               <h2 className="font-semibold">Subir Imágenes</h2>
-              <Uploader
-                propertyId={id}
-                onUploadSuccess={mutatePropertyImages}
-              />
+              <Uploader userId={id} onUploadSuccess={mutatePropertyImages} />
             </div>
             <div className="flex p-7 flex-col gap-4 border border-gray-100 rounded-xl bg-white">
               <h2 className="font-semibold">Imágenes</h2>
