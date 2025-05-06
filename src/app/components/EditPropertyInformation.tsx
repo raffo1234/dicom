@@ -19,7 +19,6 @@ import { getAdminPropertiesUserKey } from "@/constants";
 import PropertyImagesEdition from "./PropertyImagesEdition";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createNumberMask } from "text-mask-addons";
 
 type Inputs = {
   title: string;

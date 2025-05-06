@@ -116,8 +116,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           className="text-gray-700 mb-3 group-hover:text-cyan-400 transition-colors duration-300"
           fontSize={42}
         />
-        <h2 className="text-gray-400 text-sm mb-1">PNG, JPG, menor a 100KB</h2>
-        <h4 className="font-semibold">Arrastra y suelta tu archivo aquí</h4>
+        <h2 className="text-gray-400 text-sm mb-1">
+          Zip with .dcim files, less than 200KB
+        </h2>
+        <h4 className="font-semibold">Drag and Drop your file here</h4>
         <input
           {...getInputProps()}
           id="dropzone-file"

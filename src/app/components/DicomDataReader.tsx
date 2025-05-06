@@ -144,9 +144,9 @@ const DicomDataReader: React.FC = () => {
         imageDataInfo,
         cornerstoneImage: image, // Opcional: guardar el objeto imagen si lo necesitas después
       });
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error loading or parsing DICOM:", err);
-      setError(`Error al cargar o procesar el archivo DICOM: ${err.message}`);
+      setError(`Error al cargar o procesar el archivo DICOM: ${err}`);
     } finally {
       setIsLoading(false);
       // Limpiar el archivo del fileManager de cornerstone-wado-image-loader

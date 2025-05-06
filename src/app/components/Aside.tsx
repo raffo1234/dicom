@@ -14,13 +14,8 @@ const pages = [
   },
   {
     href: "/admin/users",
-    title: "Usuarios",
+    title: "Users",
     iconName: "solar:user-linear",
-  },
-  {
-    href: "/admin/property",
-    title: "Propiedades",
-    iconName: "solar:key-square-2-broken",
   },
   {
     href: "/admin/roles",
@@ -29,7 +24,7 @@ const pages = [
   },
   {
     href: "/admin/permisos",
-    title: "Permisos",
+    title: "Permissions",
     iconName: "solar:lock-keyhole-broken",
   },
 ];
@@ -86,18 +81,6 @@ export default function Aside({
                 </Link>
               </li>
             ))}
-          </ul>
-          <ul className="flex flex-col gap-1 text-sm mt-2 pt-2 border-t border-gray-100">
-            <li>
-              <button className="rounded-xl w-full text-left py-3 px-4 gap-3.5 flex items-center hover:bg-gray-100 hover:text-red-500 transition-colors duration-300">
-                <Icon
-                  icon="solar:inbox-out-linear"
-                  fontSize={17}
-                  className="-rotate-90"
-                />
-                Salir
-              </button>
-            </li>
           </ul>
         </nav>
       </section>
