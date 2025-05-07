@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { DicomType } from "@/types/dicomType";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
@@ -15,6 +17,7 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
           study_description,
           modality,
           study_date,
+          created_at,
         }) => {
           return (
             <div
@@ -40,8 +43,14 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
                   <div className="text-gray-400 text-xs">
                     {study_description}
                   </div>
-                  <div className="text-gray-600 text-xs">
+                  <div className="text-gray-600 text-xs mb-2">
                     {modality} / {study_date}
+                  </div>
+                  <div className="text-gray-600 text-xs">
+                    <span className="font-semibold">Created at:</span>{" "}
+                    {format(new Date(created_at), "dd MMMM, yyyy hh:mm a", {
+                      locale: es,
+                    })}
                   </div>
                 </div>
               </div>

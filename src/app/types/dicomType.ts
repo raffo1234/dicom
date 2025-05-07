@@ -11,4 +11,5 @@ export type DicomType = {
   modality: string;
   study_date: string;
   series_description: string;
+  created_at: string;
 };
