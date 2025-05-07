@@ -5,7 +5,7 @@ export default function Logo() {
   return (
     <Link
       href="/"
-      title="Inicio | Inmobiliaria"
+      title="Radiologist"
       className="flex items-center gap-2 text-sm font-semibold uppercase"
     >
       <span className="p-2 rounded-xl bg-cyan-500 block">

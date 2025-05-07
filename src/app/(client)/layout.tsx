@@ -6,8 +6,8 @@ import PropertyPreview from "@/components/PropertyPreview";
 import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
-  title: "Casamia",
-  description: "Casamia",
+  title: "Radiologist",
+  description: "Radiologist",
 };
 
 export default async function RootLayout({

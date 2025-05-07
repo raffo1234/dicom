@@ -53,7 +53,7 @@ export default async function ProfilePopover() {
                   className="py-2 px-6 hover:bg-gray-50 flex items-center gap-3.5"
                 >
                   <Icon icon="solar:home-smile-angle-broken" />
-                  <span>Inicio</span>
+                  <span>Home</span>
                 </Link>
               </li>
               <li>
@@ -77,7 +77,7 @@ export default async function ProfilePopover() {
                       icon="solar:inbox-out-linear"
                       className="-rotate-90"
                     />
-                    <span>Salir</span>
+                    <span>Sign Out</span>
                   </button>
                 </form>
               </li>
@@ -96,7 +96,7 @@ export default async function ProfilePopover() {
             className="flex gap-4 cursor-pointer hover:bg-rose-400 px-6 py-2 bg-black text-white rounded-full transition-colors duration-700 active:bg-gray-900"
           >
             <Icon icon="solar:login-3-broken" fontSize={24}></Icon>
-            <span>Iniciar sesión</span>
+            <span>Sign in</span>
           </button>
         </form>
       )}

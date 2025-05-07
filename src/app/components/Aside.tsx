@@ -65,7 +65,7 @@ export default function Aside({
               width={48}
             />
             <div className="">
-              <p className="text-sm leading-3 mb-1 text-gray-500">Bienvenido</p>
+              <p className="text-sm leading-3 mb-1 text-gray-500">Welcome</p>
               <h3 className="font-semibold text-gray-700 text-lg">
                 {userName}
               </h3>

@@ -8,7 +8,7 @@ export default function Header() {
       <nav className="max-w-[1816px] w-full mx-auto p-4 justify-between flex items-center">
         <Link
           href="/"
-          title="Inicio | Inmobiliaria"
+          title="Radiologist"
           className="flex items-center gap-2 text-sm font-semibold uppercase"
         >
           <span className="p-2 rounded-xl bg-rose-400 block w-[46px] h-[46px]">

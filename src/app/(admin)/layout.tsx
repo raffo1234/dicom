@@ -8,8 +8,8 @@ import { Icon } from "@iconify/react";
 import ProfilePopover from "@/components/ProfilePopover";
 
 export const metadata: Metadata = {
-  title: "Admin Casamia",
-  description: "Admin Casamia",
+  title: "Admin Radiologist",
+  description: "Admin Radiologist",
 };
 
 export default async function AdminLayout({

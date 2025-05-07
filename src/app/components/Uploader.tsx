@@ -6,7 +6,7 @@ import dicomParser from "dicom-parser"; // Or dcmjs, etc.
 import { Buffer } from "buffer";
 import { supabase } from "@/lib/supabase";
 import React, { useCallback, useState, type ChangeEvent } from "react";
-import { v4 as uuidv4 } from "uuid";
+// import { v4 as uuidv4 } from "uuid";
 import PrimaryButton from "./PrimaryButton";
 import { Icon } from "@iconify/react";
 import { useDropzone } from "react-dropzone";
@@ -186,9 +186,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
       setMessage("Dicom uploaded and associated successfully!");
       setFile(null);
-      // if (onUploadSuccess) {
-      //   // onUploadSuccess(publicUrl);
-      // }
+      if (onUploadSuccess) {
+        // onUploadSuccess(publicUrl);
+      }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
