@@ -33,21 +33,21 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 }) => {
   // const bucketName = "dicoms";
   const [uploading, setUploading] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<FileList | File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0] || null;
+    const selectedFiles = event.target.files || [];
 
-    setFile(selectedFile);
+    setFiles(selectedFiles);
     setError(null);
     setMessage(null);
   };
 
   const handleUpload = async () => {
-    if (!file) {
-      setError("Please select an Dicom file.");
+    if (files.length === 0) {
+      setError("Please select Dicom files.");
       return;
     }
 
@@ -84,108 +84,113 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       //   throw new Error("Could not get public URL after upload.");
       // }
 
-      const formData = new FormData();
-      if (file) formData.append("dicomZipFile", file); // 'dicomZipFile' is the key expected by the API route
+      // const formData = new FormData();
 
-      const zippedFile = formData.get("dicomZipFile") as Blob | null;
+      // if (file) formData.append("dicomZipFile", file); // 'dicomZipFile' is the key expected by the API route
 
-      const zipData = zippedFile
-        ? Buffer.from(await zippedFile.arrayBuffer())
-        : null;
-      const zip = new JSZip();
-      const contents = zipData ? await zip.loadAsync(zipData) : null;
+      // const zippedFile = formData.get("dicomZipFile") as Blob | null;
 
-      const fileNames = contents ? Object.keys(contents.files) : [];
-      let dicomFileName = fileNames.find((name) =>
-        name.toLowerCase().endsWith(".dcm")
-      );
+      const zippedFiles = files;
 
-      if (!dicomFileName) {
-        const firstFile = fileNames
-          .map((name) => contents?.files[name])
-          .find((file) => !file?.dir);
+      Array.from(zippedFiles).map(async (zippedFile) => {
+        const zipData = zippedFile
+          ? Buffer.from(await zippedFile.arrayBuffer())
+          : null;
+        const zip = new JSZip();
+        const contents = zipData ? await zip.loadAsync(zipData) : null;
 
-        // if (!firstFile) {
-        //   // Return 400 if zip is empty or only contains folders
-        // }
+        const fileNames = contents ? Object.keys(contents.files) : [];
+        let dicomFileName = fileNames.find((name) =>
+          name.toLowerCase().endsWith(".dcm")
+        );
 
-        dicomFileName = firstFile?.name; // Use the first actual file's name
-      }
+        if (!dicomFileName) {
+          const firstFile = fileNames
+            .map((name) => contents?.files[name])
+            .find((file) => !file?.dir);
 
-      if (contents) {
-        const dicomFile: JSZip.JSZipObject =
-          contents.files[dicomFileName as string];
+          // if (!firstFile) {
+          //   // Return 400 if zip is empty or only contains folders
+          // }
 
-        if (dicomFile.dir) {
-          // Should not happen with the logic above, but added for safety
-          // return res.status(400).json({
-          //   error: "Selected file inside zip is a directory, not a DICOM file.",
-          // });
-          console.log(
-            "Selected file inside zip is a directory, not a DICOM file."
-          );
+          dicomFileName = firstFile?.name; // Use the first actual file's name
         }
 
-        const arrayBuffer: ArrayBuffer = await dicomFile.async("arraybuffer");
-        const byteArray: Uint8Array = new Uint8Array(arrayBuffer);
+        if (contents) {
+          const dicomFile: JSZip.JSZipObject =
+            contents.files[dicomFileName as string];
 
-        interface DicomDataSet {
-          string: (tag: string) => string | undefined;
-          // Add other methods if you use them, e.g.:
-          // int16: (tag: string) => number | undefined;
-          // sequence: (tag: string) => { items: Array<DicomDataSet | any> } | undefined;
-          // ...
-        }
-
-        let dataSet: DicomDataSet;
-
-        try {
-          dataSet = dicomParser.parseDicom(byteArray);
-
-          const extractedMetadata: DicomMetadataResponse = {
-            patientName: dataSet.string("x00100010"),
-            patientID: dataSet.string("x00100020"),
-            studyDescription: dataSet.string("x00081030"),
-            seriesDescription: dataSet.string("x0008103E"),
-            modality: dataSet.string("x00080060"),
-            studyDate: dataSet.string("x00080020"),
-            // Add more tags here as needed, check dicomParser docs or DICOM standard
-            // E.g., Manufacturer: dataSet.string('x00080070')
-            // E.g., Study Instance UID: dataSet.string('x0020000D')
-          };
-
-          const { data: insertData, error: insertError } = await supabase
-            .from("dicom")
-            .insert([
-              {
-                // dicom_url: publicUrl,
-                user_id: userId,
-                patient_name: extractedMetadata.patientName,
-                patient_id: extractedMetadata.patientID,
-                study_description: extractedMetadata.studyDescription,
-                series_description: extractedMetadata.seriesDescription,
-                modality: extractedMetadata.modality,
-                study_date: extractedMetadata.studyDate,
-              },
-            ])
-            .select()
-            .single();
-
-          if (insertError) {
-            throw insertError;
+          if (dicomFile.dir) {
+            // Should not happen with the logic above, but added for safety
+            // return res.status(400).json({
+            //   error: "Selected file inside zip is a directory, not a DICOM file.",
+            // });
+            console.log(
+              "Selected file inside zip is a directory, not a DICOM file."
+            );
           }
 
-          if (insertData) {
-            setError(null);
-            setMessage(null);
+          const arrayBuffer: ArrayBuffer = await dicomFile.async("arraybuffer");
+          const byteArray: Uint8Array = new Uint8Array(arrayBuffer);
+
+          interface DicomDataSet {
+            string: (tag: string) => string | undefined;
+            // Add other methods if you use them, e.g.:
+            // int16: (tag: string) => number | undefined;
+            // sequence: (tag: string) => { items: Array<DicomDataSet | any> } | undefined;
+            // ...
           }
-        } catch (parseError) {
-          console.error("DICOM parsing failed:", parseError);
+
+          let dataSet: DicomDataSet;
+
+          try {
+            dataSet = dicomParser.parseDicom(byteArray);
+
+            const extractedMetadata: DicomMetadataResponse = {
+              patientName: dataSet.string("x00100010"),
+              patientID: dataSet.string("x00100020"),
+              studyDescription: dataSet.string("x00081030"),
+              seriesDescription: dataSet.string("x0008103E"),
+              modality: dataSet.string("x00080060"),
+              studyDate: dataSet.string("x00080020"),
+              // Add more tags here as needed, check dicomParser docs or DICOM standard
+              // E.g., Manufacturer: dataSet.string('x00080070')
+              // E.g., Study Instance UID: dataSet.string('x0020000D')
+            };
+
+            const { data: insertData, error: insertError } = await supabase
+              .from("dicom")
+              .insert([
+                {
+                  // dicom_url: publicUrl,
+                  user_id: userId,
+                  patient_name: extractedMetadata.patientName,
+                  patient_id: extractedMetadata.patientID,
+                  study_description: extractedMetadata.studyDescription,
+                  series_description: extractedMetadata.seriesDescription,
+                  modality: extractedMetadata.modality,
+                  study_date: extractedMetadata.studyDate,
+                },
+              ])
+              .select()
+              .single();
+
+            if (insertError) {
+              throw insertError;
+            }
+
+            if (insertData) {
+              setError(null);
+              setMessage(null);
+            }
+          } catch (parseError) {
+            console.error("DICOM parsing failed:", parseError);
+          }
         }
-      }
+      });
 
       setMessage("Dicom uploaded and associated successfully!");
-      setFile(null);
+      setFiles([]);
       if (onUploadSuccess) {
         // onUploadSuccess(publicUrl);
       }
@@ -200,7 +205,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onDrop = useCallback((acceptedFiles: any[]) => {
-    setFile(acceptedFiles[0] || null);
+    setFiles(acceptedFiles || []);
     setError(null);
     setMessage(null);
   }, []);
@@ -228,26 +233,30 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           Zip with .dcim files, less than 200MB
         </h2>
         <h4 className="font-semibold">Drag and Drop your file here</h4>
-        {file && (
-          <p className="text-sm mt-2 text-gray-500">
-            Selected file: {file.name}
-          </p>
-        )}
+        {Array.from(files).map((file) => {
+          return (
+            file && (
+              <p className="text-sm mt-2 text-gray-500">
+                Selected file: {file.name}
+              </p>
+            )
+          );
+        })}
+
         <input
           {...getInputProps()}
           id="dropzone-file"
-          accept="image/*"
           onChange={handleFileChange}
           disabled={uploading}
           type="file"
           className="hidden"
         />
       </div>
-      {file ? (
+      {files.length > 0 ? (
         <div className="mt-4 flex justify-center">
           <PrimaryButton
             type="button"
-            disabled={uploading || !file}
+            disabled={uploading}
             onClick={handleUpload}
             label={uploading ? "Uploading..." : "Upload File"}
           />
@@ -260,7 +269,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           <Icon
             icon="solar:close-circle-broken"
             className="flex-shrink-0"
-            font-size={24}
+            fontSize={24}
           ></Icon>
           <span>
             Error: {error} eue reuri eroei reior eior eoir eori oier oeuero{" "}
@@ -273,7 +282,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             <Icon
               icon="solar:check-circle-broken"
               className="flex-shrink-0"
-              font-size={24}
+              fontSize={24}
             ></Icon>
             <span>Success: {message}</span>
           </p>
