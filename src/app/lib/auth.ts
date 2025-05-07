@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import syncUserWithDatabase from "@/lib/syncUserWithDatabase";
+import { NextResponse, NextRequest } from "next/server";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -40,7 +41,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string; // Assuming you set user.id in jwt callback
-        // session.accessToken = token.accessToken; // Example: expose access token to session
       }
       return session;
     },

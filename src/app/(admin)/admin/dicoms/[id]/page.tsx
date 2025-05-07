@@ -11,6 +11,7 @@ export default function Page() {
     []
   );
 
+  console.log(value);
   return (
     <>
       <h1 className="mb-6 font-semibold text-lg block">Medical Report</h1>

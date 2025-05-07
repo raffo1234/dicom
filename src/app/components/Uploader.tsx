@@ -30,7 +30,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   userId,
   onUploadSuccess,
 }) => {
-  const bucketName = "dicoms";
+  // const bucketName = "dicoms";
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -59,29 +59,29 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     setError(null);
     setMessage(null);
 
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${uuidv4()}.${fileExt}`;
-    const filePath = `${userId}/${fileName}`;
+    // const fileExt = file.name.split(".").pop();
+    // const fileName = `${uuidv4()}.${fileExt}`;
+    // const filePath = `${userId}/${fileName}`;
 
     try {
-      const { error: uploadError } = await supabase.storage
-        .from(bucketName)
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
+      // const { error: uploadError } = await supabase.storage
+      //   .from(bucketName)
+      //   .upload(filePath, file, {
+      //     cacheControl: "3600",
+      //     upsert: false,
+      //   });
 
-      if (uploadError) {
-        throw uploadError;
-      }
+      // if (uploadError) {
+      //   throw uploadError;
+      // }
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+      // const {
+      //   data: { publicUrl },
+      // } = supabase.storage.from(bucketName).getPublicUrl(filePath);
 
-      if (!publicUrl) {
-        throw new Error("Could not get public URL after upload.");
-      }
+      // if (!publicUrl) {
+      //   throw new Error("Could not get public URL after upload.");
+      // }
 
       const formData = new FormData();
       if (file) formData.append("dicomZipFile", file); // 'dicomZipFile' is the key expected by the API route
@@ -104,9 +104,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           .map((name) => contents?.files[name])
           .find((file) => !file?.dir);
 
-        if (!firstFile) {
-          // Return 400 if zip is empty or only contains folders
-        }
+        // if (!firstFile) {
+        //   // Return 400 if zip is empty or only contains folders
+        // }
 
         dicomFileName = firstFile?.name; // Use the first actual file's name
       }
@@ -157,7 +157,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             .from("dicom")
             .insert([
               {
-                dicom_url: publicUrl,
+                // dicom_url: publicUrl,
                 user_id: userId,
                 patient_name: extractedMetadata.patientName,
                 patient_id: extractedMetadata.patientID,
@@ -185,9 +185,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
       setMessage("Dicom uploaded and associated successfully!");
       setFile(null);
-      if (onUploadSuccess) {
-        onUploadSuccess(publicUrl);
-      }
+      // if (onUploadSuccess) {
+      //   // onUploadSuccess(publicUrl);
+      // }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

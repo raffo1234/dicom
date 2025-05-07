@@ -5,7 +5,6 @@ import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 // import DicomMetadataUploadLargeFile from "@/components/DicomMetadataUploadLargeFile";
 import { Permissions } from "@/types/propertyState";
-import Image from "next/image";
 
 export default async function Page() {
   const session = await auth();
