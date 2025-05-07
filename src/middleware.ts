@@ -8,9 +8,10 @@ const homePage = "/";
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
-  if (protectedPaths.some((path) => pathname.startsWith(path))) {
-    const token = await getToken({ req, secret: process.env.AUTH_SECRET });
+  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
 
+  if (protectedPaths.some((path) => pathname.startsWith(path))) {
+    console.log({ AUTH_SECRET: process.env.AUTH_SECRET, token });
     if (!token) {
       const url = new URL(homePage, req.url);
 
