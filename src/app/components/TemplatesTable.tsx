@@ -2,7 +2,6 @@
 
 import { supabase } from "@/lib/supabase";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { message } from "antd";
 import Link from "next/link";
 import useSWR, { mutate } from "swr";
 

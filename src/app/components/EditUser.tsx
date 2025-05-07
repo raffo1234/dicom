@@ -86,7 +86,7 @@ export default function EditUser({ userId }: { userId: string }) {
           <FormSkeleton rows={2} />
         ) : (
           <>
-            <h2 className="mb-6 font-semibold text-lg block">Editar Usuario</h2>
+            <h2 className="mb-6 font-semibold text-lg block">Edit User</h2>
             <form onSubmit={handleSubmit(onSubmit)} id="editUser">
               <fieldset className="flex flex-col gap-4">
                 <div>
