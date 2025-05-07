@@ -23,7 +23,7 @@ export default async function Page() {
   return (
     <>
       <h1 className="mb-6 font-semibold text-lg block">
-        Upload File{" "}
+        Upload Files{" "}
         <span className="text-sm text-gray-500 font-normal">
           (zipped .dcim files)
         </span>

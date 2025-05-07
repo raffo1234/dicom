@@ -7,7 +7,6 @@ import { Buffer } from "buffer";
 import { supabase } from "@/lib/supabase";
 import React, { useCallback, useState, type ChangeEvent } from "react";
 // import { v4 as uuidv4 } from "uuid";
-import PrimaryButton from "./PrimaryButton";
 import { Icon } from "@iconify/react";
 import { useDropzone } from "react-dropzone";
 import Link from "next/link";
@@ -232,17 +231,28 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         <h2 className="text-gray-400 text-sm mb-1">
           Zip with .dcim files, less than 200MB
         </h2>
-        <h4 className="font-semibold">Drag and Drop your file here</h4>
-        {Array.from(files).map((file) => {
-          return (
-            file && (
-              <p className="text-sm mt-2 text-gray-500">
-                Selected file: {file.name}
-              </p>
-            )
-          );
-        })}
-
+        <h4 className="font-semibold">Drag and Drop your files here</h4>
+        {files.length > 0 ? (
+          <div className="border border-gray-200 rounded-xl mt-6 max-w-md">
+            <div className="text-sm font-semibold px-5 py-2 bg-gray-100 rounded-t-xl">
+              Selected File{files.length === 1 ? "" : "s"} ({files.length})
+            </div>
+            <div className="border-t border-gray-200">
+              {Array.from(files).map((file, index) => {
+                return (
+                  file && (
+                    <p
+                      key={index}
+                      className="truncate text-sm text-gray-500 px-5 py-2 first:border-0 border-t border-gray-200"
+                    >
+                      {file.name}
+                    </p>
+                  )
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
         <input
           {...getInputProps()}
           id="dropzone-file"
@@ -254,12 +264,19 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       </div>
       {files.length > 0 ? (
         <div className="mt-4 flex justify-center">
-          <PrimaryButton
+          <button
             type="button"
+            className="flex gap-4 items-center text-white cursor-pointer font-semibold disabled:border-gray-100 disabled:bg-gray-100 py-3 px-10 bg-cyan-500 hover:bg-cyan-400 transition-colors duration-500 rounded-lg"
             disabled={uploading}
             onClick={handleUpload}
-            label={uploading ? "Uploading..." : "Upload File"}
-          />
+          >
+            <Icon icon="solar:upload-minimalistic-linear" fontSize={26} />
+            <span>
+              {uploading
+                ? "Uploading..."
+                : `Upload File${files.length === 1 ? "" : "s"}`}
+            </span>
+          </button>
         </div>
       ) : null}
       {/* {metadata} */}
