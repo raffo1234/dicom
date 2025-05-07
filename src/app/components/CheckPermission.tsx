@@ -16,7 +16,7 @@ const permissionFetcher = async (slug: string) => {
 const rolePermissionFetcher = async (roleId: string, permissionId: string) => {
   const { count, error } = await supabase
     .from("role_permission")
-    .select("role_id, permission_id", { count: "exact" })
+    .select("role_id, permission_id", { count: "exact", head: true })
     .eq("role_id", roleId)
     .eq("permission_id", permissionId);
   if (error) throw error;
@@ -44,6 +44,7 @@ export default function CheckPermission({
       permission ? rolePermissionFetcher(userRoleId, permission.id) : null
     );
 
+  console.log(permissionsCount);
   if (isLoadingPermission || isLoadingPermissionsCount)
     return (
       <span className="relative flex size-3">
