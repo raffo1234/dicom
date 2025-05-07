@@ -23,9 +23,9 @@ export default async function Page() {
   return (
     <>
       <h1 className="mb-6 font-semibold text-lg block">
-        Upload Dicom{" "}
+        Upload File{" "}
         <span className="text-sm text-gray-500 font-normal">
-          (Zip with .dcim files)
+          (zipped .dcim files)
         </span>
       </h1>
       <CheckPermission

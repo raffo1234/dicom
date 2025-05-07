@@ -62,7 +62,7 @@ export default async function ProfilePopover() {
                   className="flex gap-3.5 items-center py-2 px-6 hover:bg-gray-50"
                 >
                   <Icon icon="solar:settings-minimalistic-broken" />
-                  <span>Upload Dicom</span>
+                  <span>Upload File</span>
                 </Link>
               </li>
               <li className="border-t border-gray-100">

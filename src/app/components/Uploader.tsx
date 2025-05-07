@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from "uuid";
 import PrimaryButton from "./PrimaryButton";
 import { Icon } from "@iconify/react";
 import { useDropzone } from "react-dropzone";
+import Link from "next/link";
 
 interface DicomMetadataResponse {
   patientName?: string;
@@ -227,6 +228,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           Zip with .dcim files, less than 200MB
         </h2>
         <h4 className="font-semibold">Drag and Drop your file here</h4>
+        {file && (
+          <p className="text-sm mt-2 text-gray-500">
+            Selected file: {file.name}
+          </p>
+        )}
         <input
           {...getInputProps()}
           id="dropzone-file"
@@ -237,17 +243,51 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           className="hidden"
         />
       </div>
-
-      {file && <p>Selecionar imagen: {file.name}</p>}
-      <PrimaryButton
-        type="button"
-        disabled={uploading || !file}
-        onClick={handleUpload}
-        label={uploading ? "Cargando..." : "Cargar Archivo"}
-      />
+      {file ? (
+        <div className="mt-4 flex justify-center">
+          <PrimaryButton
+            type="button"
+            disabled={uploading || !file}
+            onClick={handleUpload}
+            label={uploading ? "Uploading..." : "Upload File"}
+          />
+        </div>
+      ) : null}
       {/* {metadata} */}
-      {error && <p className="error-message">Error: {error}</p>}
-      {message && <p className="success-message">Success: {message}</p>}
+
+      {error && (
+        <p className="w-fit text-sm px-4 py-2 border border-rose-200 flex items-center gap-3 bg-rose-50 rounded-xl mt-3">
+          <Icon
+            icon="solar:close-circle-broken"
+            className="flex-shrink-0"
+            font-size={24}
+          ></Icon>
+          <span>
+            Error: {error} eue reuri eroei reior eior eoir eori oier oeuero{" "}
+          </span>
+        </p>
+      )}
+      {message && (
+        <div className="flex items-center justify-between gap-4 mt-3">
+          <p className="w-fit text-sm px-4 py-2 border border-green-200 bg-green-50 flex items-center gap-3 rounded-xl">
+            <Icon
+              icon="solar:check-circle-broken"
+              className="flex-shrink-0"
+              font-size={24}
+            ></Icon>
+            <span>Success: {message}</span>
+          </p>
+          <Link
+            href="/admin/dicoms"
+            title="Go Dicoms"
+            className="w-fit text-lg flex items-center gap-4 px-8 py-2  bg-black text-white rounded-full transition-colors duration-700 hover:bg-gray-800 active:bg-gray-900"
+          >
+            <Icon icon="solar:bones-broken" fontSize={24}></Icon>
+            <span>Go Dicoms</span>
+            <Icon icon="solar:arrow-right-broken" fontSize={24}></Icon>
+          </Link>
+        </div>
+      )}
     </>
   );
 };
