@@ -12,7 +12,7 @@ type Inputs = {
   description: string;
 };
 
-export default function AddRole() {
+export default function AddTemplate() {
   const [isLoading, setIsLoading] = useState(false);
   const [displayForm, setDisplayForm] = useState(false);
   const { reset, register, handleSubmit } = useForm<Inputs>({
@@ -21,12 +21,19 @@ export default function AddRole() {
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setIsLoading(true);
-    await supabase.from("role").insert([data]);
-    await mutate("admin-roles");
+    await supabase.from("template").insert([data]);
+    await mutate("admin-templates");
     reset();
     setDisplayForm(false);
     setIsLoading(false);
+    mutate("templates");
   };
+
+  if (isLoading) {
+    <div className="px-6  transition-all duration-300 py-4 border-t  border-gray-200 first:border-0">
+      <div className="rounded-xl bg-gray-100 h-4 w-1/2"></div>
+    </div>;
+  }
 
   return (
     <>
@@ -85,7 +92,7 @@ export default function AddRole() {
           className="w-full flex rounded-b-xl gap-3.5 items-center text-left hover:bg-gray-50 transition-colors duration-300 px-6 py-4 border-t border-gray-200"
         >
           <Icon icon="solar:add-square-broken" fontSize={22} />
-          <span className="pb-1">Agregar Rol</span>
+          <span className="pb-1">Agregar Template</span>
         </button>
       )}
     </>

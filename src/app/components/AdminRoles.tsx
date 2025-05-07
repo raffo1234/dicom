@@ -118,12 +118,16 @@ export function Role({
       <button
         onClick={() => setIsOpen((prev) => !prev)}
         key={id}
-        className={`${isOpen ? "bg-gray-50" : ""} w-full first:rounded-t-lg first:border-0 flex gap-3.5 items-center text-left hover:bg-gray-50 transition-colors duration-300 px-6 py-4 border-t border-gray-200`}
+        className={`${
+          isOpen ? "bg-gray-50" : ""
+        } w-full first:rounded-t-lg first:border-0 flex gap-3.5 items-center text-left hover:bg-gray-50 transition-colors duration-300 px-6 py-4 border-t border-gray-200`}
       >
         <Icon
           icon="solar:alt-arrow-down-linear"
-          fontSize={16}
-          className={`${isOpen ? "rotate-180" : ""} transition-transform duration-500`}
+          fontSize={20}
+          className={`${
+            isOpen ? "rotate-180" : ""
+          } transition-transform duration-500`}
         />
         <span className="pb-1">{name}</span>
       </button>
