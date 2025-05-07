@@ -17,11 +17,11 @@ export default async function ProfilePopover() {
             {session?.user?.image ? (
               <Image
                 src={session.user.image}
-                className="w-12 h-12 rounded-full object-cover"
+                className="rounded-full object-cover"
                 width={48}
                 height={48}
                 alt={session.user.image}
-                priority={false}
+                priority={true}
                 quality={70}
               />
             ) : null}
