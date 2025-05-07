@@ -1,7 +1,11 @@
+import CheckPermission from "@/components/CheckPermission";
+import FallbackPermission from "@/components/FallbackPermission";
 import Uploader from "@/components/Uploader";
 import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 // import DicomMetadataUploadLargeFile from "@/components/DicomMetadataUploadLargeFile";
+import { Permissions } from "@/types/propertyState";
+import Image from "next/image";
 
 export default async function Page() {
   const session = await auth();
@@ -9,7 +13,7 @@ export default async function Page() {
 
   const { data: user } = await supabase
     .from("user")
-    .select("id")
+    .select("id, role_id")
     .eq("email", userEmail)
     .single();
 
@@ -25,7 +29,13 @@ export default async function Page() {
           (Zip with .dcim files)
         </span>
       </h1>
-      <Uploader userId={userId} />
+      <CheckPermission
+        userRoleId={user.role_id}
+        requiredPermission={Permissions.CARGAR_DICOM}
+        fallback={<FallbackPermission />}
+      >
+        <Uploader userId={userId} />
+      </CheckPermission>
       {/* <DicomMetadataUploadLargeFile /> */}
     </>
   );
