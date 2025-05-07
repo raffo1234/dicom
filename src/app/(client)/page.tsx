@@ -11,7 +11,7 @@ export default async function Index() {
       >
         Your Scans, Instantly Accessible
       </h1>
-      <p className="text-md sm:text-xl">
+      <p className="text-md sm:text-xl text-gray-500">
         Bringing Clarity to Every Medical Image
       </p>
       <Image

@@ -355,6 +355,11 @@
     "@eslint/core" "^0.13.0"
     levn "^0.4.1"
 
+"@fontsource-variable/ibm-plex-sans@^5.2.5":
+  version "5.2.5"
+  resolved "https://registry.yarnpkg.com/@fontsource-variable/ibm-plex-sans/-/ibm-plex-sans-5.2.5.tgz#a5bc5c254c7e97b2c865f437048ff7524e8effb9"
+  integrity sha512-SrvCxqJK3NI4JBroXsJdBZGfs6QVfY0lK2VIZIIgYPea+/LI/3zYOOTI0AVvrMrmBks87GJQfPGprftlO8yInQ==
+
 "@hookform/resolvers@^5.0.1":
   version "5.0.1"
   resolved "https://registry.npmjs.org/@hookform/resolvers/-/resolvers-5.0.1.tgz"

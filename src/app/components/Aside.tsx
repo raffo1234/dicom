@@ -82,7 +82,7 @@ export default function Aside({
                   className={`${href === currentPath ? "bg-gray-100" : ""} hover:bg-gray-50 rounded-xl py-3 px-4 gap-3.5 flex items-center transition-colors duration-300 `}
                   onClick={() => setIsOpen(false)}
                 >
-                  <Icon icon={iconName} fontSize={17} />
+                  <Icon icon={iconName} fontSize={19} />
                   <span>{title}</span>
                 </Link>
               </li>
