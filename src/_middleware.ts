@@ -20,8 +20,3 @@ export async function middleware(request: NextRequest) {
 
   return NextResponse.next();
 }
-
-// Protect specific routes with the middleware
-export const config = {
-  matcher: ["/admin/:path*"],
-};
