@@ -1,5 +1,7 @@
 import { DicomType } from "@/types/dicomType";
+import { Icon } from "@iconify/react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
   return (
@@ -17,7 +19,7 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
           return (
             <div
               key={id}
-              className="border bg-white border-gray-200 hover:bg-gray-50 rounded-lg p-4"
+              className="border bg-white items-center flex justify-between border-gray-200 hover:bg-gray-50 rounded-lg p-4"
             >
               <div className="flex items-center gap-4 flex-col sm:flex-row">
                 <Image
@@ -43,6 +45,25 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
                   </div>
                 </div>
               </div>
+              {true ? (
+                <Link
+                  href={`/admin/dicoms/${id}`}
+                  className="text-amber-600 cursor-pointer p-2 rounded-full border border-gray-200 hover:border-gray-300"
+                >
+                  <Icon
+                    icon="solar:clapperboard-edit-broken"
+                    fontSize={24}
+                  ></Icon>
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className="text-green-400 p-2 cursor-pointer rounded-full border border-gray-200 hover:border-gray-300"
+                >
+                  <Icon icon="solar:file-check-outline" fontSize={24}></Icon>
+                </button>
+              )}
+
               {/* <div className="text-sm text-gray-500 w-full text-center mb-4">
                 {role?.name}
               </div> */}

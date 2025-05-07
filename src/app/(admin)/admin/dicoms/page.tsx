@@ -12,7 +12,7 @@ export default async function Page() {
 
   return (
     <>
-      <h1 className="mb-6 font-semibold text-lg block">Usuarios</h1>
+      <h1 className="mb-6 font-semibold text-lg block">Dicoms</h1>
       <DicomsTable dicoms={dicoms} />
     </>
   );
