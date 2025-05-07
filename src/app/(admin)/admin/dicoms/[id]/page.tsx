@@ -14,7 +14,9 @@ export default function Page() {
   return (
     <>
       <h1 className="mb-6 font-semibold text-lg block">Medical Report</h1>
-      <ReactQuill theme="snow" value={value} onChange={setValue} />
+      <div className="bg-white">
+        <ReactQuill theme="snow" onChange={setValue} />
+      </div>
     </>
   );
 }

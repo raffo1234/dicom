@@ -58,21 +58,11 @@ export default async function ProfilePopover() {
               </li>
               <li>
                 <Link
-                  href="/inmuebles/favoritos"
-                  title="Favoritos"
-                  className="flex items-center gap-3.5 py-2 px-6 hover:bg-gray-50"
-                >
-                  <Icon icon="solar:clipboard-heart-broken" />
-                  <span>Favoritos</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/dicoms"
+                  href="/admin/dicom"
                   className="flex gap-3.5 items-center py-2 px-6 hover:bg-gray-50"
                 >
                   <Icon icon="solar:settings-minimalistic-broken" />
-                  <span>Admin</span>
+                  <span>Upload Dicom</span>
                 </Link>
               </li>
               <li className="border-t border-gray-100">
@@ -103,9 +93,10 @@ export default async function ProfilePopover() {
         >
           <button
             type="submit"
-            className="block px-6 py-2 bg-black text-white rounded-full transition-colors duration-700 hover:bg-gray-800 active:bg-gray-900"
+            className="flex gap-4 cursor-pointer hover:bg-rose-400 px-6 py-2 bg-black text-white rounded-full transition-colors duration-700 active:bg-gray-900"
           >
-            Iniciar sesión
+            <Icon icon="solar:login-3-broken" fontSize={24}></Icon>
+            <span>Iniciar sesión</span>
           </button>
         </form>
       )}

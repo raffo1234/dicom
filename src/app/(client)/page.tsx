@@ -1,49 +1,26 @@
-import PropertiesList from "@/components/PropertiesList";
-import { auth } from "@/lib/auth";
-import { propertyQuery } from "@/queries/property";
-import { PropertyState } from "@/types/propertyState";
-import { supabase } from "@/lib/supabase";
-import PropertiesGrid from "@/components/PropertiesGrid";
-import PropertyItem from "@/components/PropertyItem";
-import SearchForm from "@/components/SearchForm";
-import HightLightSelect from "@/components/HighLightSelect";
-import { PropertyType } from "@/types/propertyType";
+import Image from "next/image";
 
 export default async function Index() {
-  const session = await auth();
-  const userEmail = session?.user?.email;
-
-  const { data: properties } = (await supabase
-    .from("property")
-    .select(propertyQuery)
-    .eq("state", PropertyState.ACTIVE)
-    .order("created_at", { ascending: false })
-    .limit(4)) as { data: PropertyType[] | null };
-
   return (
-    <>
-      <h2
+    <div className="flex flex-col justify-center items-center gap-7">
+      <h1
+        className="leading-16 sm:leading-20"
         style={{
-          fontSize: "clamp(16px, 6vw + .5rem, 50px)",
+          fontSize: "clamp(18px, 12vw + .3rem, 70px)",
         }}
-        className="mb-10 leading-relaxed w-full text-center"
       >
-        Encuentra tu próximo <br /> hogar
-      </h2>
-      <SearchForm />
-      <HightLightSelect />
-      <PropertiesGrid>
-        {properties?.map((property) => {
-          return (
-            <PropertyItem
-              key={property.id}
-              userEmail={userEmail}
-              property={property}
-            />
-          );
-        })}
-        <PropertiesList userEmail={userEmail} />
-      </PropertiesGrid>
-    </>
+        Your Scans, Instantly Accessible
+      </h1>
+      <p className="text-md sm:text-xl">
+        Bringing Clarity to Every Medical Image
+      </p>
+      <Image
+        src="/radiologist.png"
+        width="1000"
+        height={1000}
+        alt="Radiologist"
+        className="sm:aspect-[5/3] aspect-[3/4] object-cover rounded-2xl "
+      />
+    </div>
   );
 }
