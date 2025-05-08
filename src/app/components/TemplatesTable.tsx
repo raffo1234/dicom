@@ -59,7 +59,7 @@ export default function TemplatesTable({ userId }: { userId: string }) {
         return (
           <div
             key={id}
-            className="relative border-t border-gray-200 first:border-0"
+            className="relative border-b border-gray-200 last:border-0"
           >
             <Link
               href={`/admin/templates/${id}`}
