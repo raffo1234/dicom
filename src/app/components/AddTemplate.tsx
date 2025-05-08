@@ -12,7 +12,7 @@ type Inputs = {
   description: string;
 };
 
-export default function AddTemplate() {
+export default function AddTemplate({ userId }: { userId: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const [displayForm, setDisplayForm] = useState(false);
   const { reset, register, handleSubmit } = useForm<Inputs>({
@@ -21,8 +21,8 @@ export default function AddTemplate() {
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setIsLoading(true);
-    await supabase.from("template").insert([data]);
-    await mutate("admin-templates");
+    await supabase.from("template").insert([{ ...data, user_id: userId }]);
+    await mutate(`admin_templates_${userId}`);
     reset();
     setDisplayForm(false);
     setIsLoading(false);

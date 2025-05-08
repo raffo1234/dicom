@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { TemplateType } from "@/types/templateType";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
@@ -59,8 +60,35 @@ export default function Report({
             );
           })}
         </div>
-        <div className="bg-white">
+        <div className="flex flex-col gap-4">
+          {activeTemplate?.header_image_url ? (
+            <Image
+              src={activeTemplate?.header_image_url}
+              width={300}
+              height={300}
+              alt={activeTemplate.name}
+              className="bg-gray-100 w-full h-auto"
+            />
+          ) : null}
           <ReactQuill theme="snow" onChange={setValue} />
+          {activeTemplate?.sign_image_url ? (
+            <Image
+              src={activeTemplate?.sign_image_url}
+              width={300}
+              height={300}
+              alt={activeTemplate.name}
+              className="bg-gray-100 w-[25%] h-auto"
+            />
+          ) : null}
+          {activeTemplate?.footer_image_url ? (
+            <Image
+              src={activeTemplate?.footer_image_url}
+              width={300}
+              height={300}
+              alt={activeTemplate.name}
+              className="bg-gray-100 w-full h-auto"
+            />
+          ) : null}
         </div>
       </div>
     </>

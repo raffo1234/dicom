@@ -5,17 +5,22 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import Link from "next/link";
 import useSWR, { mutate } from "swr";
 
-const fetcher = async () => {
+const fetcher = async (userId: string) => {
   const { data, error } = await supabase
     .from("template")
     .select("*")
+    .eq("user_id", userId)
     .order("created_at", { ascending: true });
   if (error) throw error;
   return data;
 };
 
-export default function TemplatesTable() {
-  const { data: templates, error, isLoading } = useSWR("templates", fetcher);
+export default function TemplatesTable({ userId }: { userId: string }) {
+  const {
+    data: templates,
+    error,
+    isLoading,
+  } = useSWR(`admin_templates_${userId}`, () => fetcher(userId));
 
   const deleteUser = async (templateId: string) => {
     const confirmationMessage = confirm(
@@ -25,7 +30,7 @@ export default function TemplatesTable() {
 
     try {
       await supabase.from("template").delete().eq("id", templateId);
-      await mutate("templates");
+      await mutate(`admin_templates_${userId}`);
     } catch (error) {
       console.error("Error deleting user", error);
     }
