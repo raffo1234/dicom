@@ -214,7 +214,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     accept: {
       "application/zip": [".zip"],
     },
-    maxFiles: 1,
   });
 
   return (

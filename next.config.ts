@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
       new URL(
         "https://bzhqohtiptcvesotbvgh.supabase.co/storage/v1/object/public/**"
       ),
+      new URL(
+        "https://ihykrbwvzhpvedkygqfk.supabase.co/storage/v1/object/public/**"
+      ),
       new URL("https://lh3.googleusercontent.com/**"),
     ],
   },

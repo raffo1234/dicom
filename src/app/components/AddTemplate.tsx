@@ -52,7 +52,7 @@ export default function AddTemplate() {
                 id="name"
                 {...register("name")}
                 required
-                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-cyan-100  focus:border-cyan-500"
+                className="w-full bg-white px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-cyan-100  focus:border-cyan-500"
               />
             </div>
             <div>
@@ -67,7 +67,7 @@ export default function AddTemplate() {
                 id="description"
                 {...register("description")}
                 required
-                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-cyan-100  focus:border-cyan-500"
+                className="w-full px-3 bg-white py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-cyan-100  focus:border-cyan-500"
               />
             </div>
           </fieldset>
