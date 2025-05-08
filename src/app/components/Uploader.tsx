@@ -14,6 +14,7 @@ import Link from "next/link";
 interface DicomMetadataResponse {
   patientName?: string;
   patientID?: string;
+  patientAge?: string;
   studyDescription?: string;
   seriesDescription?: string;
   modality?: string;
@@ -148,6 +149,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             const extractedMetadata: DicomMetadataResponse = {
               patientName: dataSet.string("x00100010"),
               patientID: dataSet.string("x00100020"),
+              patientAge: dataSet.string("x00101010"),
               studyDescription: dataSet.string("x00081030"),
               seriesDescription: dataSet.string("x0008103E"),
               modality: dataSet.string("x00080060"),
@@ -165,6 +167,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                   user_id: userId,
                   patient_name: extractedMetadata.patientName,
                   patient_id: extractedMetadata.patientID,
+                  patient_age: extractedMetadata.patientAge,
                   study_description: extractedMetadata.studyDescription,
                   series_description: extractedMetadata.seriesDescription,
                   modality: extractedMetadata.modality,

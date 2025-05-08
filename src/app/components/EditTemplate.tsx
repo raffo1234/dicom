@@ -6,7 +6,7 @@ import FormSkeleton from "@/components/FormSkeleton";
 import { supabase } from "@/lib/supabase";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Link from "next/link";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
 import { SubmitHandler, useForm } from "react-hook-form";
 import useSWR, { mutate } from "swr";

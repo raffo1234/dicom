@@ -14,6 +14,7 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
           user,
           patient_name,
           patient_id,
+          patient_age,
           study_description,
           modality,
           study_date,
@@ -38,6 +39,9 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
                     ID: {patient_id}
                   </div>
                   <div className="truncate text-sm mb-1">{patient_name}</div>
+                  <div className="text-gray-600 text-xs mb-2">
+                    Age: {patient_age}
+                  </div>
                 </div>
                 <div className="flex-grow-1 pl-4">
                   <div className="text-gray-400 text-xs">
