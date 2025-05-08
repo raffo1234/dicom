@@ -212,7 +212,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     setMessage(null);
   }, []);
 
-  const { getRootProps, getInputProps } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
       "application/zip": [".zip"],
@@ -223,7 +223,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     <>
       <div
         {...getRootProps()}
-        className="flex flex-col group items-center justify-center py-9 w-full border border-gray-300 border-dashed rounded-2xl cursor-pointer bg-gray-50"
+        className={`${isDragActive ? "bg-cyan-50 border-cyan-100" : "bg-gray-50 border-gray-300"} transition-colors duration-300 flex flex-col group items-center justify-center py-9 w-full border  border-dashed rounded-2xl cursor-pointer `}
       >
         <Icon
           icon="solar:cloud-upload-broken"
