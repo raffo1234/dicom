@@ -23,7 +23,7 @@ export default async function AdminLayout({
   return (
     <html lang="es">
       <body>
-        <header className="border-b border-gray-200 py-3 flex justify-between relative z-20">
+        <header className="print:hidden border-b border-gray-200 py-3 flex justify-between relative z-20">
           <div className="max-w-[1360px] px-4 mx-auto w-full flex justify-between items-center">
             <h1 className="block">
               <Link href="/" title="Radiologist">

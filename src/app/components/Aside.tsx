@@ -50,7 +50,7 @@ export default function Aside({
   const currentPath = usePathname();
 
   return (
-    <div className="flex-shrink-0">
+    <div className="flex-shrink-0 print:hidden">
       <button
         onClick={() => setIsOpen((prev) => !prev)}
         className={`${

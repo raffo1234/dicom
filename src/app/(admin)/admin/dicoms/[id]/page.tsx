@@ -2,8 +2,12 @@ import { supabase } from "@/lib/supabase";
 import Report from "@/components/Report";
 import { TemplateType } from "@/types/templateType";
 import { auth } from "@/lib/auth";
+import { DicomType } from "@/types/dicomType";
 
-export default async function Page() {
+type Params = Promise<{ id: string }>;
+
+export default async function Page({ params }: { params: Params }) {
+  const { id } = await params;
   const session = await auth();
   const userEmail = session?.user?.email;
 
@@ -15,6 +19,14 @@ export default async function Page() {
 
   const userId = user?.id;
 
+  const { data: dicom } = (await supabase
+    .from("dicom")
+    .select("*")
+    .eq("id", id)
+    .single()) as {
+    data: DicomType | null;
+  };
+
   const { data: templates } = (await supabase
     .from("template")
     .select("id, name, header_image_url, sign_image_url, footer_image_url")
@@ -24,9 +36,11 @@ export default async function Page() {
   };
 
   return (
-    <>
-      <h1 className="mb-6 font-semibold text-lg block">Medical Report</h1>
-      <Report templates={templates} />
-    </>
+    <div className="print:bg-white">
+      <h1 className="print:hidden mb-6 font-semibold text-lg block">
+        Medical Report
+      </h1>
+      <Report templates={templates} dicom={dicom} userId={userId} />
+    </div>
   );
 }
