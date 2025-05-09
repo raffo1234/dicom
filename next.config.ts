@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  transpilePackages: ["@react-pdf/renderer"], //dynamic import on Vercel ESM packages
   images: {
     remotePatterns: [
       new URL("https://img.freepik.com/free-vector/**"),
