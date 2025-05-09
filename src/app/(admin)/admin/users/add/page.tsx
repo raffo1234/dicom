@@ -25,7 +25,7 @@ export default async function Page() {
 
   return (
     <>
-      <h1 className="mb-8 font-semibold text-lg block">Agregar Usuario</h1>
+      <h1 className="mb-8 font-semibold text-lg block">Add User</h1>
       <form method="post" action="/admin/users/add">
         <div className="flex flex-col gap-4">
           <fieldset>
