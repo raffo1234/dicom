@@ -20,7 +20,7 @@ export default function GlobalModal() {
   };
 
   useEffect(() => {
-    const app = document.getElementById("dashboard");
+    const app = document.getElementById("admin");
     if (isModalOpen) {
       app?.classList.add("overflow-hidden");
     } else {
