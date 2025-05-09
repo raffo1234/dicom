@@ -7,6 +7,7 @@ import { useEffect, useMemo } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import useSWR, { mutate } from "swr";
 import UploaderTemplateImageUploader from "./TemplateImageUploader";
+import { Icon } from "@iconify/react/dist/iconify.js";
 
 type Inputs = {
   name: string;
@@ -70,9 +71,18 @@ export default function EditTemplate({ id }: { id: string }) {
         <FormSkeleton rows={2} />
       ) : (
         <>
-          <h2 className="mb-6 font-semibold text-lg block">
-            <span className="capitalize">{template.name}</span> Template
-          </h2>
+          <div className="flex mb-4 items-center justify-between">
+            <h1 className=" font-semibold text-lg block">
+              <span className="capitalize">{template.name}</span> Template
+            </h1>
+            <Link
+              href="/admin/templates"
+              title="Templates"
+              className="p-2 hover:text-cyan-400 transition-colors duration-300"
+            >
+              <Icon icon="solar:backspace-line-duotone" fontSize={36} />
+            </Link>
+          </div>
           <form onSubmit={handleSubmit(onSubmit)} id="editUser">
             <fieldset className="flex flex-col gap-4">
               <div className="flex p-7 flex-col gap-4 border border-gray-100 rounded-xl bg-white">
