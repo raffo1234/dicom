@@ -44,7 +44,6 @@ export default function CheckPermission({
       permission ? rolePermissionFetcher(userRoleId, permission.id) : null
     );
 
-  console.log(permissionsCount);
   if (isLoadingPermission || isLoadingPermissionsCount)
     return (
       <span className="relative flex size-3">

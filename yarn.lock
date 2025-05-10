@@ -2539,6 +2539,11 @@ express@^5.0.1:
     type-is "^2.0.1"
     vary "^1.1.2"
 
+extract-zip-rar@^0.19.3:
+  version "0.19.3"
+  resolved "https://registry.yarnpkg.com/extract-zip-rar/-/extract-zip-rar-0.19.3.tgz#e4430531cfd27ca6b1fbb8070178883c112f8b89"
+  integrity sha512-zm9Ik6Yuqw9JrtFokueeZO1hH9d2G/StoWQcf3QYq/yFf2C9g9UO7IJpZ570FO4iFsKGAwIrUyE5oqBMnavddw==
+
 fast-deep-equal@^3.1.1, fast-deep-equal@^3.1.3:
   version "3.1.3"
   resolved "https://registry.npmjs.org/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz"
@@ -3839,6 +3844,11 @@ range-parser@^1.2.1:
   version "1.2.1"
   resolved "https://registry.npmjs.org/range-parser/-/range-parser-1.2.1.tgz"
   integrity sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==
+
+rarjs@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/rarjs/-/rarjs-0.0.2.tgz#ab7e68694de30c014a48e43189ba0a67fbe530ed"
+  integrity sha512-q3gNgQfIrHdySXLuvFod0GSxnjBEiz2u9v0/+zXgyxKiOjZSh+T1Rujg4PYoU9CElJWVwi0elDPABtJi8wM4/A==
 
 raw-body@^3.0.0:
   version "3.0.0"

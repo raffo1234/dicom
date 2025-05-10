@@ -2,14 +2,21 @@
 
 import JSZip from "jszip";
 import dicomParser from "dicom-parser"; // Or dcmjs, etc.
-// import { readFileSync } from "fs";
 import { Buffer } from "buffer";
 import { supabase } from "@/lib/supabase";
 import React, { useCallback, useState, type ChangeEvent } from "react";
-// import { v4 as uuidv4 } from "uuid";
 import { Icon } from "@iconify/react";
 import { useDropzone } from "react-dropzone";
 import Link from "next/link";
+import Script from "next/script";
+
+interface DicomDataSet {
+  string: (tag: string) => string | undefined;
+  // Add other methods if you use them, e.g.:
+  // int16: (tag: string) => number | undefined;
+  // sequence: (tag: string) => { items: Array<DicomDataSet | any> } | undefined;
+  // ...
+}
 
 interface DicomMetadataResponse {
   patientName?: string;
@@ -22,16 +29,15 @@ interface DicomMetadataResponse {
   [key: string]: string | undefined;
 }
 
-interface ImageUploaderProps {
-  userId: string | undefined;
-  onUploadSuccess?: (imageUrl: string) => void;
-}
+type ImageUploaderProps = {
+  userId: string;
+  onUploadSuccess?: () => void;
+};
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({
   userId,
   onUploadSuccess,
 }) => {
-  // const bucketName = "dicoms";
   const [uploading, setUploading] = useState(false);
   const [files, setFiles] = useState<FileList | File[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +46,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = event.target.files || [];
 
-    setFiles(selectedFiles);
+    // Convert FileList to Array for consistent handling
+    setFiles(Array.from(selectedFiles));
     setError(null);
     setMessage(null);
   };
@@ -60,86 +67,56 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     setError(null);
     setMessage(null);
 
-    // const fileExt = file.name.split(".").pop();
-    // const fileName = `${uuidv4()}.${fileExt}`;
-    // const filePath = `${userId}/${fileName}`;
+    const fileErrors: string[] = [];
+    const successfulFiles: string[] = [];
 
-    try {
-      // const { error: uploadError } = await supabase.storage
-      //   .from(bucketName)
-      //   .upload(filePath, file, {
-      //     cacheControl: "3600",
-      //     upsert: false,
-      //   });
+    for (const selectedFile of Array.from(files)) {
+      try {
+        const fileName = selectedFile.name;
+        const fileExt = fileName.split(".").pop();
 
-      // if (uploadError) {
-      //   throw uploadError;
-      // }
-
-      // const {
-      //   data: { publicUrl },
-      // } = supabase.storage.from(bucketName).getPublicUrl(filePath);
-
-      // if (!publicUrl) {
-      //   throw new Error("Could not get public URL after upload.");
-      // }
-
-      // const formData = new FormData();
-
-      // if (file) formData.append("dicomZipFile", file); // 'dicomZipFile' is the key expected by the API route
-
-      // const zippedFile = formData.get("dicomZipFile") as Blob | null;
-
-      const zippedFiles = files;
-
-      Array.from(zippedFiles).map(async (zippedFile) => {
-        const zipData = zippedFile
-          ? Buffer.from(await zippedFile.arrayBuffer())
+        const zipData = selectedFile
+          ? Buffer.from(await selectedFile.arrayBuffer())
           : null;
-        const zip = new JSZip();
-        const contents = zipData ? await zip.loadAsync(zipData) : null;
 
-        const fileNames = contents ? Object.keys(contents.files) : [];
-        let dicomFileName = fileNames.find((name) =>
-          name.toLowerCase().endsWith(".dcm")
-        );
+        let contents: JSZip | null | undefined;
 
-        if (!dicomFileName) {
-          const firstFile = fileNames
-            .map((name) => contents?.files[name])
-            .find((file) => !file?.dir);
+        if (fileExt === "zip") {
+          const zip = new JSZip();
+          contents = zipData ? await zip.loadAsync(zipData) : null;
 
-          // if (!firstFile) {
-          //   // Return 400 if zip is empty or only contains folders
-          // }
+          const fileNames = contents ? Object.keys(contents.files) : [];
+          let dicomFileName = fileNames.find((name) =>
+            name.toLowerCase().endsWith(".dcm")
+          );
 
-          dicomFileName = firstFile?.name; // Use the first actual file's name
-        }
+          // Consider more robust logic here if the first non-dir file isn't guaranteed to be DICOM
+          if (!dicomFileName) {
+            const firstFile = fileNames
+              .map((name) => contents?.files[name])
+              .find((file) => file && !file.dir); // Ensure file exists and is not a directory
+            dicomFileName = firstFile?.name;
+          }
 
-        if (contents) {
-          const dicomFile: JSZip.JSZipObject =
-            contents.files[dicomFileName as string];
-
-          if (dicomFile.dir) {
-            // Should not happen with the logic above, but added for safety
-            // return res.status(400).json({
-            //   error: "Selected file inside zip is a directory, not a DICOM file.",
-            // });
-            console.log(
-              "Selected file inside zip is a directory, not a DICOM file."
+          if (
+            !contents ||
+            !dicomFileName ||
+            contents.files[dicomFileName]?.dir
+          ) {
+            fileErrors.push(
+              `Could not find a suitable DICOM file in ${selectedFile.name}`
             );
+            console.error(
+              `Could not find a suitable DICOM file in ${selectedFile.name}`
+            );
+            continue;
           }
 
-          const arrayBuffer: ArrayBuffer = await dicomFile.async("arraybuffer");
+          const dicomFile = contents.files[dicomFileName];
+
+          const arrayBuffer = await dicomFile.async("arraybuffer");
+
           const byteArray: Uint8Array = new Uint8Array(arrayBuffer);
-
-          interface DicomDataSet {
-            string: (tag: string) => string | undefined;
-            // Add other methods if you use them, e.g.:
-            // int16: (tag: string) => number | undefined;
-            // sequence: (tag: string) => { items: Array<DicomDataSet | any> } | undefined;
-            // ...
-          }
 
           let dataSet: DicomDataSet;
 
@@ -154,16 +131,97 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
               seriesDescription: dataSet.string("x0008103E"),
               modality: dataSet.string("x00080060"),
               studyDate: dataSet.string("x00080020"),
-              // Add more tags here as needed, check dicomParser docs or DICOM standard
-              // E.g., Manufacturer: dataSet.string('x00080070')
-              // E.g., Study Instance UID: dataSet.string('x0020000D')
+              // Add more tags here as needed
             };
 
-            const { data: insertData, error: insertError } = await supabase
-              .from("dicom")
-              .insert([
+            // --- File Storage Upload Logic Goes Here (if needed) ---
+            // const bucketName = "dicoms"; // Define or get bucket name
+            // // Generate unique file name, maybe based on metadata?
+            // // const fileExt = selectedFile.name.split(".").pop();
+            // // const fileName = `${uuidv4()}.${fileExt}`;
+            // // const filePath = `${userId}/${fileName}`;
+            //
+            // // Example: Upload the *original zipped* file
+            // const { error: uploadError } = await supabase.storage
+            //  .from(bucketName)
+            //  .upload(filePath, selectedFile, {
+            //     cacheControl: "3600",
+            //     upsert: false, // Or true if you want to allow replacing existing files
+            //  });
+            //
+            // if (uploadError) {
+            //  throw new Error(`Storage upload failed for ${selectedFile.name}: ${uploadError.message}`);
+            // }
+            //
+            // const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+            // const publicUrl = data?.publicUrl;
+            //
+            // if (!publicUrl) {
+            //    throw new Error(`Could not get public URL for ${selectedFile.name}`);
+            // }
+            // --- End File Storage Upload Logic ---
+
+            // --- Supabase Metadata Insertion ---
+            const { error: insertError } = await supabase.from("dicom").insert([
+              {
+                // dicom_url: publicUrl, // Include publicUrl if you uploaded the file
+                user_id: userId,
+                patient_name: extractedMetadata.patientName,
+                patient_id: extractedMetadata.patientID,
+                patient_age: extractedMetadata.patientAge,
+                study_description: extractedMetadata.studyDescription,
+                series_description: extractedMetadata.seriesDescription,
+                modality: extractedMetadata.modality,
+                study_date: extractedMetadata.studyDate,
+              },
+            ]);
+            // .select() // Only include .select().single() if you need the inserted data back
+            // .single();
+
+            if (insertError) {
+              throw new Error(
+                `Database insertion failed for ${selectedFile.name}: ${insertError.message}`
+              );
+            }
+
+            // If we reached here, metadata insertion was successful
+            successfulFiles.push(selectedFile.name);
+          } catch (parseOrInsertError: any) {
+            // Catch errors specific to parsing or inserting THIS file
+            fileErrors.push(
+              `Processing ${selectedFile.name} failed: ${parseOrInsertError.message}`
+            );
+            console.error(
+              `Processing ${selectedFile.name} failed:`,
+              parseOrInsertError
+            );
+          }
+        }
+
+        if (fileExt === "tar" || fileExt === "rar" || fileExt === "7z") {
+          window.Unarchiver.open(selectedFile).then(async function (archive) {
+            const entry = archive.entries[0];
+            if (entry.is_file) {
+              const entry_file = await entry.read();
+              const entry_file_data = await entry_file.arrayBuffer();
+
+              const byteArray: Uint8Array = new Uint8Array(entry_file_data);
+              const dataSet: DicomDataSet = dicomParser.parseDicom(byteArray);
+
+              const extractedMetadata: DicomMetadataResponse = {
+                patientName: dataSet.string("x00100010"),
+                patientID: dataSet.string("x00100020"),
+                patientAge: dataSet.string("x00101010"),
+                studyDescription: dataSet.string("x00081030"),
+                seriesDescription: dataSet.string("x0008103E"),
+                modality: dataSet.string("x00080060"),
+                studyDate: dataSet.string("x00080020"),
+                // Add more tags here as needed
+              };
+
+              await supabase.from("dicom").insert([
                 {
-                  // dicom_url: publicUrl,
+                  // dicom_url: publicUrl, // Include publicUrl if you uploaded the file
                   user_id: userId,
                   patient_name: extractedMetadata.patientName,
                   patient_id: extractedMetadata.patientID,
@@ -173,40 +231,44 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                   modality: extractedMetadata.modality,
                   study_date: extractedMetadata.studyDate,
                 },
-              ])
-              .select()
-              .single();
-
-            if (insertError) {
-              throw insertError;
+              ]);
             }
-
-            if (insertData) {
-              setError(null);
-              setMessage(null);
-            }
-          } catch (parseError) {
-            console.error("DICOM parsing failed:", parseError);
-          }
+          });
         }
-      });
 
-      setMessage("Dicom uploaded and associated successfully!");
-      setFiles([]);
-      if (onUploadSuccess) {
-        // onUploadSuccess(publicUrl);
+        // --- END: Your existing file processing and parsing logic ---
+      } catch (overallFileError: any) {
+        // Catch errors related to reading the file or loading the zip
+        fileErrors.push(
+          `Reading or loading ${selectedFile.name} failed: ${overallFileError.message}`
+        );
+        console.error(
+          `Reading or loading ${selectedFile.name} failed:`,
+          overallFileError
+        );
       }
+    } // End of for...of loop
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      setError(`Upload failed: ${err.message}`);
-      console.error("Upload Error:", err);
-    } finally {
-      setUploading(false);
+    // Report results after all files have been processed
+    if (fileErrors.length > 0) {
+      setError(`Some files failed: ${fileErrors.join("; ")}`);
+    } else if (successfulFiles.length > 0) {
+      setMessage(`Successfully processed ${successfulFiles.length} file(s).`); // Or list names: `${successfulFiles.join(", ")}`
+      setFiles([]); // Clear files only on full success
+      if (onUploadSuccess) {
+        // If you uploaded files and have URLs, pass them here
+        onUploadSuccess(); // Assuming onUploadSuccess can handle multiple URLs
+      }
+    } else {
+      // Should ideally not happen if files.length > 0 and no errors occurred
+      setMessage("No files were successfully processed.");
     }
+
+    setUploading(false);
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onDrop = useCallback((acceptedFiles: any[]) => {
+
+  // Corrected type for acceptedFiles
+  const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles(acceptedFiles || []);
     setError(null);
     setMessage(null);
@@ -216,14 +278,21 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     onDrop,
     accept: {
       "application/zip": [".zip"],
+      "application/x-rar-compressed": [".rar"],
+      "application/x-tar": [".tar"],
     },
+    // maxSize: 200 * 1024 * 1024 // 200MB
   });
 
   return (
     <>
       <div
         {...getRootProps()}
-        className={`${isDragActive ? "bg-cyan-50 border-cyan-100" : "bg-gray-50 border-gray-300"} transition-colors duration-300 flex flex-col group items-center justify-center py-9 w-full border  border-dashed rounded-2xl cursor-pointer `}
+        className={`${
+          isDragActive
+            ? "bg-cyan-50 border-cyan-100"
+            : "bg-gray-50 border-gray-300"
+        } transition-colors duration-300 flex flex-col group items-center justify-center py-9 w-full border  border-dashed rounded-2xl cursor-pointer `}
       >
         <Icon
           icon="solar:cloud-upload-broken"
@@ -231,8 +300,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           fontSize={42}
         />
         <h2 className="text-gray-400 text-sm mb-1">
-          Zip with .dcim files, less than 200MB
-        </h2>
+          .zip, .rar, .tar with .dcm files, less than 200MB
+        </h2>{" "}
+        {/* Note: The size limit "less than 200MB" is mentioned in the UI text but not enforced in the current code */}
         <h4 className="font-semibold">Drag and Drop your files here</h4>
         {files.length > 0 ? (
           <div className="border border-gray-200 rounded-xl mt-6 max-w-md">
@@ -258,10 +328,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         <input
           {...getInputProps()}
           id="dropzone-file"
+          // onChange is not strictly needed if using onDrop exclusively, but kept for standard input fallback
           onChange={handleFileChange}
           disabled={uploading}
           type="file"
           className="hidden"
+          // If you want to allow selecting multiple files via the file picker as well:
+          // multiple
         />
       </div>
       {files.length > 0 ? (
@@ -275,13 +348,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             <Icon icon="solar:upload-minimalistic-linear" fontSize={26} />
             <span>
               {uploading
-                ? "Uploading..."
-                : `Upload File${files.length === 1 ? "" : "s"}`}
+                ? "Processing..." // Changed text to reflect processing, not just uploading
+                : `Process File${files.length === 1 ? "" : "s"}`}
             </span>
           </button>
         </div>
       ) : null}
-      {/* {metadata} */}
 
       {error && (
         <p className="w-fit text-sm px-4 py-2 border border-rose-200 flex items-center gap-3 bg-rose-50 rounded-xl mt-3">
@@ -291,7 +363,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             fontSize={24}
           ></Icon>
           <span>
-            Error: {error} eue reuri eroei reior eior eoir eori oier oeuero{" "}
+            Error: {error} {/* Removed placeholder text */}
           </span>
         </p>
       )}
@@ -308,7 +380,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           <Link
             href="/admin/dicoms"
             title="Go Dicoms"
-            className="w-fit text-lg flex items-center gap-4 px-8 py-2  bg-black text-white rounded-full transition-colors duration-700 hover:bg-gray-800 active:bg-gray-900"
+            className="w-fit text-lg flex items-center gap-4 px-8 py-2  bg-black text-white rounded-full transition-colors duration-700 hover:bg-gray-800 active:bg-gray-900"
           >
             <Icon icon="solar:bones-broken" fontSize={24}></Icon>
             <span>Go Dicoms</span>
@@ -316,6 +388,18 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           </Link>
         </div>
       )}
+      <Script
+        src="/unarchiver.min.js" // Path to your script in the public folder
+        strategy="afterInteractive" // Choose a loading strategy (e.g., afterInteractive)
+        onLoad={() => {
+          if (
+            typeof window !== "undefined" &&
+            typeof window.Unarchiver !== "undefined"
+          ) {
+            console.log("window.Unarchiver is now available.");
+          }
+        }}
+      />
     </>
   );
 };
