@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@fontsource-variable/ibm-plex-sans";
+@import "@fontsource/poppins";
 
 /* group-hover does not work on mobile devices PopoverProfile component */
 .dropdown-parent:hover .dropdown-child {
