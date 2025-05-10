@@ -27,18 +27,10 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
           return (
             <div
               key={id}
-              className="border bg-white border-gray-200 hover:bg-gray-50 rounded-xl"
+              className="border bg-white border-gray-200 rounded-xl"
             >
               <div className=" items-center flex justify-between p-4">
                 <div className="flex items-center gap-4 flex-col sm:flex-row">
-                  <Image
-                    src={user.image_url}
-                    className="rounded-full mb-3 mx-auto bg-gray-100 flex-shrink-0"
-                    alt={user.first_name || user.id}
-                    width={44}
-                    height={44}
-                    title={user.first_name}
-                  />
                   <div title={patient_name}>
                     <div className="truncate text-sm text-gray-500 mb-2">
                       ID: {patient_id}
@@ -64,6 +56,7 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
                 </div>
                 {true ? (
                   <Link
+                    title="Generate a PDF report"
                     href={`/admin/dicoms/${id}`}
                     className="text-amber-600 cursor-pointer p-2 rounded-full border border-gray-200 hover:border-gray-300"
                   >
@@ -84,18 +77,33 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
                 {role?.name}
               </div> */}
               </div>
-              <div className="text-gray-600 text-sm flex gap-2 items-center p-4 bg-gray-50 rounded-b-xl">
-                <Icon icon="solar:calendar-add-line-duotone" fontSize={24} />
-                <span className="font-semibold">Uploaded at:</span>
-
-                {formatInTimeZone(
-                  createdAt,
-                  "America/Lima",
-                  "dd MMMM yyyy HH:mm:ss a",
-                  {
-                    locale: es,
-                  }
-                )}
+              <div className="text-gray-600 flex-col text-sm flex gap-2 p-4 bg-gray-50 rounded-b-xl">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">Uploaded by:</span>
+                  <Image
+                    src={user.image_url}
+                    className="rounded-full bg-gray-100 flex-shrink-0"
+                    alt={user.first_name || user.id}
+                    width={36}
+                    height={36}
+                    title={user.first_name}
+                  />
+                  <span>
+                    {user.first_name} {user.last_name}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">Uploaded at:</span>
+                  <Icon icon="solar:calendar-add-line-duotone" fontSize={24} />
+                  {formatInTimeZone(
+                    createdAt,
+                    "America/Lima",
+                    "dd MMMM yyyy HH:mm:ss a",
+                    {
+                      locale: es,
+                    }
+                  )}
+                </div>
               </div>
             </div>
           );
