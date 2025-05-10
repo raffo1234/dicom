@@ -120,7 +120,7 @@ export default function UploaderTemplateImageUploader({
         </div>
         {templateImageUrl ? (
           <div className="text-green-600 text-sm mb-1">
-            Replace current header image
+            Replace current image
           </div>
         ) : null}
         <h2 className="text-gray-400 text-sm mb-1">

@@ -64,7 +64,7 @@ export default function Aside({
           isOpen
             ? "opacity-100 visible translate-x-0"
             : "invisible opacity-0 lg:visible lg:opacity-100 lg:translate-x-0 -translate-x-2"
-        } transition-all lg:w-[286px] min-h-lvh w-full absolute left-0 top-0 lg:static py-8 px-5 bg-white z-10`}
+        } transition-all lg:w-[286px] w-full absolute left-0 top-0 lg:static py-8 px-5 bg-white z-10`}
       >
         <header className="mb-20">
           <div className="flex gap-4 items-center">
