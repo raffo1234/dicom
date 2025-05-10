@@ -1,6 +1,8 @@
 import DicomsTable from "@/components/DicomsTable";
 import { supabase } from "@/lib/supabase";
 import { DicomType } from "@/types/dicomType";
+import { Icon } from "@iconify/react/dist/iconify.js";
+import Link from "next/link";
 
 export default async function Page() {
   const { data: dicoms } = (await supabase
@@ -12,7 +14,16 @@ export default async function Page() {
 
   return (
     <>
-      <h1 className="mb-6 font-semibold text-lg block">Dicoms</h1>
+      <div className="flex mb-4 print:hidden items-center justify-between">
+        <h1 className=" font-semibold text-lg block">Dicoms</h1>
+        <Link
+          href="/admin/dicom"
+          title="Upload DICOM files"
+          className="p-2 hover:text-cyan-400 transition-colors duration-300"
+        >
+          <Icon icon="solar:backspace-line-duotone" fontSize={36} />
+        </Link>
+      </div>
       <DicomsTable dicoms={dicoms} />
     </>
   );

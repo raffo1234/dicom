@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { es } from "date-fns/locale";
 import { DicomType } from "@/types/dicomType";
 import { Icon } from "@iconify/react";
@@ -20,6 +20,8 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
           study_date,
           created_at,
         }) => {
+          const createdAt = new Date(created_at);
+
           return (
             <div
               key={id}
@@ -50,11 +52,17 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
                   <div className="text-gray-600 text-xs mb-2">
                     {modality} / {study_date}
                   </div>
-                  <div className="text-gray-600 text-xs">
+                  <div className="text-gray-600 text-sm flex gap-4 items-center">
                     <span className="font-semibold">Created at:</span>{" "}
-                    {format(new Date(created_at), "dd MMMM, yyyy hh:mm a", {
-                      locale: es,
-                    })}
+                    <Icon icon="solar:calendar-line-duotone" fontSize={24} />
+                    {formatInTimeZone(
+                      createdAt,
+                      "America/Lima",
+                      "yyyy-MM-dd HH:mm:ss a",
+                      {
+                        locale: es,
+                      }
+                    )}
                   </div>
                 </div>
               </div>

@@ -38,7 +38,7 @@ export default async function Page({ params }: { params: Params }) {
   };
 
   return (
-    <div className="print:bg-white">
+    <>
       <div className="flex mb-4 print:hidden items-center justify-between">
         <h1 className=" font-semibold text-lg block">Medical Report</h1>
         <Link
@@ -50,6 +50,6 @@ export default async function Page({ params }: { params: Params }) {
         </Link>
       </div>
       <Report templates={templates} dicom={dicom} userId={userId} />
-    </div>
+    </>
   );
 }
