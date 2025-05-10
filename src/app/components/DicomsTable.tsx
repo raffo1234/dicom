@@ -25,36 +25,40 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
           const createdAt = new Date(created_at);
 
           return (
-            <div
+            <Link
+              href={`/admin/dicoms/${id}`}
               key={id}
-              className="border bg-white border-gray-200 rounded-xl"
+              className="hover:border-cyan-400 hover:outline-8 transition-colors outline-cyan-50 border bg-white border-gray-200 rounded-xl"
             >
-              <div className=" items-center flex justify-between p-4">
+              <div className=" items-center flex justify-between p-4 ">
                 <div className="flex items-center gap-4 flex-col sm:flex-row">
                   <div title={patient_name}>
                     <div className="truncate text-sm text-gray-500 mb-2">
                       ID: {patient_id}
                     </div>
-                    <div className="truncate text-sm mb-2">{patient_name}</div>
+                    <div
+                      style={{ overflowWrap: "break-word" }}
+                      className="truncate wrap-break-word text-sm mb-2"
+                    >
+                      {patient_name}
+                    </div>
                     <div className="text-gray-600 text-sm">
                       Age: {extractAgeWidthUnit(patient_age).value}{" "}
                       {extractAgeWidthUnit(patient_age).unit}
                     </div>
                   </div>
                   <div className="flex-grow-1 pl-4">
-                    <div className="text-gray-600 text-sm mb-2 flex gap-2 items-center">
+                    <div className="text-gray-500 text-sm mb-2 flex gap-2 items-center">
                       <Icon icon="solar:calendar-line-duotone" fontSize={24} />
                       <span>Study date: {formatDateYYYYMMDD(study_date)}</span>
                     </div>
-                    <div className="text-gray-600 text-sm mb-2">
+                    <div className="text-sm mb-2">{study_description}</div>
+                    <div className="text-gray-500 text-sm">
                       Modality: {modality}
-                    </div>
-                    <div className="text-gray-400 text-sm mb-2">
-                      {study_description}
                     </div>
                   </div>
                 </div>
-                {true ? (
+                {/* {true ? (
                   <Link
                     title="Generate a PDF report"
                     href={`/admin/dicoms/${id}`}
@@ -72,40 +76,35 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
                   >
                     <Icon icon="solar:file-check-outline" fontSize={24}></Icon>
                   </button>
-                )}
+                )} */}
                 {/* <div className="text-sm text-gray-500 w-full text-center mb-4">
                 {role?.name}
               </div> */}
               </div>
-              <div className="text-gray-600 flex-col text-sm flex gap-2 p-4 bg-gray-50 rounded-b-xl">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">Uploaded by:</span>
-                  <Image
-                    src={user.image_url}
-                    className="rounded-full bg-gray-100 flex-shrink-0"
-                    alt={user.first_name || user.id}
-                    width={36}
-                    height={36}
-                    title={user.first_name}
-                  />
-                  <span>
-                    {user.first_name} {user.last_name}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">Uploaded at:</span>
-                  <Icon icon="solar:calendar-add-line-duotone" fontSize={24} />
-                  {formatInTimeZone(
-                    createdAt,
-                    "America/Lima",
-                    "dd MMMM yyyy HH:mm:ss a",
-                    {
-                      locale: es,
-                    }
-                  )}
-                </div>
+              <div className="wrap flex-col sm:flex-row text-sm items-center flex gap-2 p-4 bg-gray-100 rounded-b-xl">
+                <span className="font-semibold">Uploaded at:</span>
+                {formatInTimeZone(
+                  createdAt,
+                  "America/Lima",
+                  "dd MMMM yyyy HH:mm:ss a",
+                  {
+                    locale: es,
+                  }
+                )}
+                <span>by </span>
+                <Image
+                  src={user.image_url}
+                  className="rounded-full bg-gray-100 flex-shrink-0"
+                  alt={user.first_name || user.id}
+                  width={36}
+                  height={36}
+                  title={user.first_name}
+                />
+                <span>
+                  {user.first_name} {user.last_name}
+                </span>
               </div>
-            </div>
+            </Link>
           );
         }
       )}

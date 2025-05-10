@@ -235,7 +235,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           <Link
             href="/admin/dicoms"
             title="Go Dicoms"
-            className="w-fit text-lg flex items-center gap-4 px-8 py-2  bg-black text-white rounded-full transition-colors duration-700 hover:bg-gray-800 active:bg-gray-900"
+            className="w-fit text-lg flex items-center gap-4 px-8 py-2 bg-black text-white rounded-full transition-colors duration-700 hover:bg-gray-800 active:bg-gray-900"
           >
             <Icon icon="solar:bones-broken" fontSize={24}></Icon>
             <span>Go Dicoms</span>

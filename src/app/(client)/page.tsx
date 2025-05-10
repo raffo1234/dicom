@@ -1,4 +1,6 @@
+import { Icon } from "@iconify/react/dist/iconify.js";
 import Image from "next/image";
+import Link from "next/link";
 
 export default async function Index() {
   return (
@@ -12,8 +14,16 @@ export default async function Index() {
         Your Scans, Instantly Accessible
       </h1>
       <p className="text-md sm:text-xl text-gray-500">
-        Bringing Clarity to Every Medical Image
+        Process DICOM & Create Reports with Ease
       </p>
+      <Link
+        href="/admin/dicom"
+        title="Go Dicoms"
+        className="text-lg flex items-center gap-4 px-8 py-3 bg-black text-white rounded-full transition-colors duration-700 hover:bg-gray-800 active:bg-gray-900"
+      >
+        <span>Explore Now</span>
+        <Icon icon="solar:arrow-right-linear" fontSize={24}></Icon>
+      </Link>
       <Image
         src="/radiologist.png"
         width="1000"
