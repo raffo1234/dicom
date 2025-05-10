@@ -7,7 +7,6 @@ import React, { useCallback, useState, type ChangeEvent } from "react";
 import { Icon } from "@iconify/react";
 import { useDropzone } from "react-dropzone";
 import Link from "next/link";
-import Script from "next/script";
 
 Archive.init({
   workerUrl: "/libarchive.js/dist/worker-bundle.js",
