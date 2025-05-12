@@ -4,6 +4,8 @@ import { DicomType } from "@/types/dicomType";
 import extractAgeWidthUnit from "@/lib/extractAgeWithUnit";
 import formatDateYYYYMMDD from "@/lib/formatDateYYYYMMDD";
 import { DicomStateEnum } from "@/enums/dicomStateEnum";
+import Link from "next/link";
+import { Icon } from "@iconify/react/dist/iconify.js";
 
 export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
   return (
@@ -12,21 +14,25 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-200">
-              <th className="uppercase text-sm font-semibold pb-4">Name</th>
               <th className="uppercase text-sm font-semibold pb-4">ID</th>
-              <th className="uppercase text-sm font-semibold pb-4">Gender</th>
-              <th className="uppercase text-sm font-semibold pb-4">Birthday</th>
-              <th className="uppercase text-sm font-semibold pb-4">Age</th>
-              <th className="uppercase text-sm font-semibold pb-4">Modality</th>
               <th className="uppercase text-sm font-semibold pb-4">
-                Study Date
+                Institution
               </th>
+              <th className="uppercase text-sm font-semibold pb-4">Name</th>
+              <th className="uppercase text-sm font-semibold pb-4">Gender</th>
+              <th className="uppercase text-sm font-semibold pb-4">Age</th>
+              <th className="uppercase text-sm font-semibold pb-4">Birthday</th>
               <th className="uppercase text-sm font-semibold pb-4">
                 Description
               </th>
               <th className="uppercase text-sm font-semibold pb-4">
+                Study Date
+              </th>
+              <th className="uppercase text-sm font-semibold pb-4">
                 Receipt Date
               </th>
+              <th className="uppercase text-sm font-semibold pb-4">Modality</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -44,6 +50,7 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
                   state,
                   gender,
                   birthday,
+                  institution,
                 },
                 index
               ) => {
@@ -55,9 +62,18 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
                     className={`
                       ${state === DicomStateEnum.VIEWED ? "bg-yellow-100" : ""}
                       ${state === DicomStateEnum.DRAFT ? "bg-orange-100" : ""}
-                      ${state === DicomStateEnum.COMPLETED ? "bg-cyan-50" : ""}
+                      ${state === DicomStateEnum.COMPLETED ? "bg-cyan-100" : ""}
                       ${index % 2 === 0 ? "bg-gray-50" : ""} ${index === 0 ? " " : "border-t border-gray-200"}`}
                   >
+                    <td>
+                      <Link
+                        href={`/admin/dicoms/${id}`}
+                        className="p-4 text-sm font-semibold"
+                      >
+                        {patient_id}
+                      </Link>
+                    </td>
+                    <td className="p-4">{institution}</td>
                     <td className="p-4">
                       <div
                         style={{ overflowWrap: "break-word" }}
@@ -66,31 +82,27 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
                         {patient_name}
                       </div>
                     </td>
-                    <td className="p-3">{patient_id}</td>
-                    <td className="p-3">{gender}</td>
-                    <td className="p-3 text-gray-500 text-sm whitespace-nowrap">
-                      {formatDateYYYYMMDD(birthday)}
-                    </td>
-                    <td className="p-3">
+                    <td className="p-4">{gender}</td>
+                    <td className="p-4">
                       <div className="text-gray-600 text-sm whitespace-nowrap">
                         {extractAgeWidthUnit(patient_age).value}{" "}
                         {extractAgeWidthUnit(patient_age).unit}
                       </div>
                     </td>
-                    <td className="p-3">
-                      <div className="text-gray-500 text-sm">{modality}</div>
+                    <td className="p-4 text-gray-500 text-sm whitespace-nowrap">
+                      {formatDateYYYYMMDD(birthday)}
                     </td>
-                    <td className="p-3">
-                      <div className="text-gray-500 text-sm whitespace-nowrap">
-                        <span>{formatDateYYYYMMDD(study_date)}</span>
-                      </div>
-                    </td>
-                    <td className="p-3">
+                    <td className="p-4">
                       <div className="text-sm mb-2 font-semibold">
                         {study_description}
                       </div>
                     </td>
-                    <td className="p-3 text-gray-500 text-sm whitespace-nowrap">
+                    <td className="p-4">
+                      <div className="text-gray-500 text-sm whitespace-nowrap">
+                        <span>{formatDateYYYYMMDD(study_date)}</span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-gray-500 text-sm whitespace-nowrap">
                       {formatInTimeZone(
                         createdAt,
                         "America/Lima",
@@ -99,6 +111,28 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
                           locale: es,
                         }
                       )}
+                    </td>
+                    <td className="p-4">
+                      <div className="text-gray-500 text-sm">{modality}</div>
+                    </td>
+                    <td className="p-4">
+                      <Link
+                        target="_blank"
+                        href={`/admin/dicoms/preview/${id}`}
+                        title="PDF Preview"
+                        className="py-2 px-6 flex gap-3 items-center font-semibold  border bg-cyan-500 text-white rounded-full cursor-pointer"
+                      >
+                        <Icon icon="solar:eye-linear" fontSize={24} />
+                        <span>Preview</span>
+                      </Link>
+                      <Link
+                        href={`/admin/dicoms/${id}`}
+                        title="Inform"
+                        className="py-2 px-6 flex gap-3 items-center font-semibold border bg-rose-500 text-white rounded-full cursor-pointer"
+                      >
+                        <Icon icon="solar:document-add-linear" fontSize={24} />
+                        <span>Report</span>
+                      </Link>
                     </td>
                   </tr>
                 );

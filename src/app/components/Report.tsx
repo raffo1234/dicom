@@ -198,7 +198,7 @@ export default function Report({
             type="button"
             className="py-2 px-6 flex gap-3 items-center font-semibold  border bg-cyan-500 text-white rounded-full cursor-pointer"
           >
-            <Icon icon="solar:file-text-outline" fontSize={24} />
+            <Icon icon="solar:eye-linear" fontSize={24} />
             <span>Preview</span>
           </Link>
         </div>
@@ -321,7 +321,7 @@ export default function Report({
           type="button"
           className="px-6 py-2 flex items-center text-white border  bg-cyan-500 rounded-xl cursor-pointer"
         >
-          <Icon icon="solar:file-text-outline" fontSize={24} />
+          <Icon icon="solar:eye-linear" fontSize={24} />
         </Link>
         {PDFDownloadLink && dicomState === DicomStateEnum.COMPLETED ? (
           <PDFDownloadLink

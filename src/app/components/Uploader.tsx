@@ -94,6 +94,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             studyDate: dataSet.string("x00080020"),
             gender: dataSet.string("x00100040"),
             birthday: dataSet.string("x00100030"),
+            institution: dataSet.string("x00080080"),
             // Add more tags here as needed
           };
 
@@ -109,6 +110,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
               study_date: extractedMetadata.studyDate,
               gender: extractedMetadata.gender,
               birthday: extractedMetadata.birthday,
+              institution: extractedMetadata.institution,
             },
           ]);
         }

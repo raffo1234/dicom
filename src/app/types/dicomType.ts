@@ -20,5 +20,6 @@ export type DicomType = {
   report: string;
   gender: string;
   birthday: string;
+  institution: string;
   template?: TemplateType | undefined;
 };
