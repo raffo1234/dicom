@@ -1,5 +1,6 @@
 "use client";
 
+import { useDebouncedCallback } from "use-debounce";
 import extractAgeWidthUnit from "@/lib/extractAgeWithUnit";
 import React, { ChangeEvent, useEffect, useMemo, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
@@ -19,6 +20,8 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { DicomType } from "@/types/dicomType";
 import Link from "next/link";
 import formatDateYYYYMMDD from "@/lib/formatDateYYYYMMDD";
+import { DicomStateEnum } from "@/enums/dicomStateEnum";
+import { supabase } from "@/lib/supabase";
 
 function GeneratePDFButton({
   label,
@@ -31,7 +34,7 @@ function GeneratePDFButton({
     <button
       disabled={isDisabled}
       type="button"
-      className="flex print:hidden gap-4 items-center text-white cursor-pointer font-semibold disabled:border-gray-100 disabled:opacity-90 py-3 px-10 bg-cyan-500 hover:bg-cyan-400 transition-colors duration-500 rounded-lg"
+      className="flex print:hidden gap-4 items-center text-white cursor-pointer font-semibold disabled:border-gray-100 disabled:opacity-90 py-3 px-10 bg-cyan-500 hover:bg-cyan-400 transition-colors duration-500 rounded-xl"
     >
       <span>{label}</span>
     </button>
@@ -149,6 +152,7 @@ export default function Report({
   userId?: string;
   dicom: DicomType;
 }) {
+  const [dicomState, setDicomState] = useState("");
   const [value, setValue] = useState("");
   const [activeTemplate, setActiveTemplate] = useState<TemplateType | null>(
     null
@@ -172,18 +176,57 @@ export default function Report({
     setActiveTemplate(template);
   };
 
+  const debouncedTextarea = useDebouncedCallback((value) => {
+    updateDicomReport(value, dicom.id);
+    setValue(value);
+  }, 500);
+
+  const updateDicomReport = async (value: string, id: string) => {
+    try {
+      await supabase.from("dicom").update({ report: value }).eq("id", id);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const updateDicomState = async (id: string, state: DicomStateEnum) => {
+    try {
+      const { data } = await supabase
+        .from("dicom")
+        .update({ state, report: value })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (data) setDicomState(data.state);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     if (templates && templates.length > 0) {
       setActiveTemplate(templates[0]);
     }
   }, [templates]);
 
-  const handleTextareaChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    setValue(event.target.value);
-  };
+  useEffect(() => {
+    if (!dicom.state) {
+      updateDicomState(dicom.id, DicomStateEnum.VIEWED);
+    }
+  }, [dicom.id, dicom.state]);
+
+  useEffect(() => {
+    setDicomState(dicom.state);
+  }, [dicom.state]);
+
+  useEffect(() => {
+    setValue(dicom.report);
+  }, [dicom.report]);
 
   return (
     <>
+      {dicomState}
       <div className="flex mb-6 items-center">
         <div
           className="grid gap-2 flex-grow-1"
@@ -208,15 +251,26 @@ export default function Report({
               </button>
             );
           })}
+          <div
+            className="flex items-center cursor-pointer text-center p-1 transition-colors duration-300 text-gray-500 hover:text-cyan-400 group"
+            title="Add template"
+          >
+            <Icon icon="solar:add-circle-linear" fontSize={32} />
+          </div>
         </div>
-        <Link
-          href="/admin/templates"
-          className="flex items-center gap-2 cursor-pointer text-center p-3 text-cyan-400 group"
-          title="Add template"
-        >
-          <Icon icon="solar:file-favourite-line-duotone" fontSize={24} />
-          <span className="group-hover:underline">Add template</span>
-        </Link>
+        {dicomState ? (
+          <div
+            className={`
+              ${dicomState ? "text-gray-700 border-gray-300 bg-gray-100 font-semibold uppercase" : ""}
+              ${dicomState === DicomStateEnum.VIEWED ? "text-yellow-500 border-yellow-300 bg-yellow-50" : ""}  
+              ${dicomState === DicomStateEnum.DRAFT ? "text-orange-500 border-orange-100 bg-orange-50" : ""}  
+              ${dicomState === DicomStateEnum.COMPLETED ? "text-blue-600 border-blue-100 bg-blue-50" : ""}  
+              py-1 px-5 text-sm uppercase rounded-full border`}
+            title={dicomState}
+          >
+            {dicomState}
+          </div>
+        ) : null}
       </div>
       <div className="bg-gray-200">
         <div
@@ -258,8 +312,8 @@ export default function Report({
               </div>
             </div>
             <TextareaAutosize
-              value={value}
-              onChange={handleTextareaChange}
+              defaultValue={value}
+              onChange={(event) => debouncedTextarea(event.target.value)}
               minRows={2}
               placeholder="Radiologist's report"
               aria-label="Radiologist's report"
@@ -288,8 +342,36 @@ export default function Report({
           </div>
         </div>
       </div>
-      <div className="flex justify-end mt-6">
-        {PDFDownloadLink ? (
+      <div className="flex justify-end mt-6 gap-3">
+        <Link
+          href="/admin/dicoms"
+          className="flex items-center border px-6 cursor-pointer py-2 border-gray-200 text-gray-700 rounded-xl font-semibold"
+          type="button"
+          title="Back"
+        >
+          <span>Back</span>
+        </Link>
+        {dicomState === DicomStateEnum.VIEWED ? (
+          <button
+            onClick={() => updateDicomState(dicom.id, DicomStateEnum.DRAFT)}
+            title={`Save as ${DicomStateEnum.DRAFT}`}
+            type="button"
+            className="px-6 py-2 font-semibold text-orange-600 border-orange-200 cursor-pointer border bg-orange-50 rounded-xl"
+          >
+            Save as {DicomStateEnum.DRAFT}
+          </button>
+        ) : null}
+        {dicomState === DicomStateEnum.DRAFT ? (
+          <button
+            onClick={() => updateDicomState(dicom.id, DicomStateEnum.COMPLETED)}
+            title={`Save as ${DicomStateEnum.COMPLETED}`}
+            type="button"
+            className="px-6 py-2 font-semibold text-cyan-600 border-cyan-200 cursor-pointer border bg-cyan-50 rounded-xl"
+          >
+            Save as {DicomStateEnum.COMPLETED}
+          </button>
+        ) : null}
+        {PDFDownloadLink && dicomState === DicomStateEnum.COMPLETED ? (
           <PDFDownloadLink
             document={
               <ContentDocument

@@ -1,3 +1,4 @@
+import { DicomStateEnum } from "@/enums/dicomStateEnum";
 import { UserType } from "./userType";
 
 export type DicomType = {
@@ -13,4 +14,7 @@ export type DicomType = {
   study_date: string;
   series_description: string;
   created_at: string;
+  state: DicomStateEnum;
+  template_id: string;
+  report: string;
 };

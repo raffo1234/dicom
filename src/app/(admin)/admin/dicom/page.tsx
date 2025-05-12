@@ -34,7 +34,7 @@ export default async function Page() {
         <Link
           href="/admin/dicoms"
           className="flex items-center gap-2 cursor-pointer text-center p-3 text-cyan-400 group"
-          title="Add template"
+          title="View All"
         >
           <Icon icon="solar:file-text-line-duotone" fontSize={24} />
           <span className="group-hover:underline">View All</span>
