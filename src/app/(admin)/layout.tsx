@@ -28,7 +28,7 @@ export default async function AdminLayout({
     <html lang="es">
       <body>
         <Header />
-        <main className="flex items-start max-w-[1360px] mx-auto w-full z-10 relative">
+        <main className="border-t border-gray-200 flex items-start max-w-[1360px] mx-auto w-full z-10 relative">
           {user && user?.name && user?.image ? (
             <Aside userName={user.name} userImage={user.image} />
           ) : null}
