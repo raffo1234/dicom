@@ -6,6 +6,9 @@ import Header from "@/components/Header";
 export const metadata: Metadata = {
   title: "Radiologist",
   description: "Radiologist",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default async function RootLayout({

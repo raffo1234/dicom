@@ -10,6 +10,9 @@ import ProfilePopover from "@/components/ProfilePopover";
 export const metadata: Metadata = {
   title: "Admin Radiologist",
   description: "Admin Radiologist",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default async function AdminLayout({
