@@ -1,5 +1,6 @@
 "use client";
 
+import extractAgeWidthUnit from "@/lib/extractAgeWithUnit";
 import React, { ChangeEvent, useEffect, useMemo, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import dynamic from "next/dynamic";
@@ -17,6 +18,7 @@ import { TemplateType } from "@/types/templateType";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { DicomType } from "@/types/dicomType";
 import Link from "next/link";
+import formatDateYYYYMMDD from "@/lib/formatDateYYYYMMDD";
 
 function GeneratePDFButton({
   label,
@@ -101,14 +103,17 @@ const ContentDocument = ({
               {dicom?.patient_name}
             </Text>
             <Text style={styles.textPatient}>
-              <Text style={styles.textSmall}>Edad: </Text> {dicom?.patient_age}{" "}
-              Años
+              <Text style={styles.textSmall}>Edad: </Text>{" "}
+              {dicom?.patient_age
+                ? `${extractAgeWidthUnit(dicom?.patient_age).value} ${extractAgeWidthUnit(dicom?.patient_age).unit}`
+                : null}
             </Text>
             <Text style={styles.textPatient}>
               <Text style={styles.textSmall}>ID: </Text> {dicom?.patient_id}
             </Text>
             <Text style={styles.textPatient}>
-              <Text style={styles.textSmall}>Fecha: </Text> {dicom?.study_date}
+              <Text style={styles.textSmall}>Fecha: </Text>{" "}
+              {dicom?.study_date ? formatDateYYYYMMDD(dicom?.study_date) : null}
             </Text>
             <Text style={styles.textPatient}>
               <Text style={styles.textSmall}>Descripción: </Text>
@@ -237,14 +242,15 @@ export default function Report({
               </div>
               <div>
                 <span className="text-gray-400">Edad:</span>{" "}
-                {dicom?.patient_age} Años
+                {extractAgeWidthUnit(dicom?.patient_age).value}{" "}
+                {extractAgeWidthUnit(dicom?.patient_age).unit}
               </div>
               <div>
                 <span className="text-gray-400">ID:</span> {dicom?.patient_id}
               </div>
               <div>
                 <span className="text-gray-400">Fecha:</span>{" "}
-                {dicom?.study_date}
+                {formatDateYYYYMMDD(dicom?.study_date)}
               </div>
               <div>
                 <span className="text-gray-400">Descripción:</span>{" "}

@@ -15,16 +15,16 @@ export default function extractAge(ageString: string) {
   let ageUnit = null;
   switch (unitChar) {
     case "Y":
-      ageUnit = "years";
+      ageUnit = "años";
       break;
     case "M":
-      ageUnit = "months";
+      ageUnit = "meses";
       break;
     case "W":
-      ageUnit = "weeks";
+      ageUnit = "semanas";
       break;
     case "D":
-      ageUnit = "days";
+      ageUnit = "dias";
       break;
     default:
       return { value: ageValue, unit: null };

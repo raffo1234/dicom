@@ -18,6 +18,11 @@ const pages = [
     iconName: "solar:bones-broken",
   },
   {
+    href: "/admin/templates",
+    title: "Templates",
+    iconName: "solar:file-favourite-line-duotone",
+  },
+  {
     href: "/admin/users",
     title: "Users",
     iconName: "solar:user-linear",
@@ -31,11 +36,6 @@ const pages = [
     href: "/admin/permisos",
     title: "Permissions",
     iconName: "solar:lock-keyhole-broken",
-  },
-  {
-    href: "/admin/templates",
-    title: "Templates",
-    iconName: "solar:file-favourite-line-duotone",
   },
 ];
 
@@ -84,7 +84,7 @@ export default function Aside({
           </div>
         </header>
         <nav>
-          <ul className="flex flex-col text-sm">
+          <ul className="flex flex-col">
             {pages.map(({ href, title, iconName }) => (
               <li key={href}>
                 <Link
