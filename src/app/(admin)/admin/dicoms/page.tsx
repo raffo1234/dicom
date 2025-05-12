@@ -16,7 +16,6 @@ export default async function Page() {
     <>
       <div className="flex mb-4 print:hidden items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className=" font-semibold text-lg block">Dicoms</h1>
           <Link
             href="/admin/dicom"
             title="Upload Dicoms"

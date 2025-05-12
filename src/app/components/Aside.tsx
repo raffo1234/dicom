@@ -99,7 +99,7 @@ export default function Aside({
                   }  rounded-xl py-3 px-4 gap-3.5 flex items-center transition-colors duration-300 `}
                   onClick={closeMenu}
                 >
-                  <Icon icon={iconName} fontSize={19} />
+                  <Icon icon={iconName} fontSize={21} />
                   <span>{title}</span>
                 </Link>
               </li>
