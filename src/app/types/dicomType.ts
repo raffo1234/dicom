@@ -1,5 +1,6 @@
 import { DicomStateEnum } from "@/enums/dicomStateEnum";
 import { UserType } from "./userType";
+import { TemplateType } from "./templateType";
 
 export type DicomType = {
   id: string;
@@ -17,4 +18,5 @@ export type DicomType = {
   state: DicomStateEnum;
   template_id: string;
   report: string;
+  template?: TemplateType | undefined;
 };

@@ -23,7 +23,7 @@ export default async function AdminLayout({
 
   return (
     <html lang="es">
-      <body>
+      <body id="admin">
         <Header />
         <div className="border-t border-gray-200">
           <main className="flex items-start max-w-[1360px] mx-auto w-full z-10 relative">

@@ -2,17 +2,9 @@
 
 import { useDebouncedCallback } from "use-debounce";
 import extractAgeWidthUnit from "@/lib/extractAgeWithUnit";
-import React, { ChangeEvent, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import dynamic from "next/dynamic";
-import {
-  Document,
-  Page,
-  Text,
-  View,
-  Image as ImagePdf,
-  StyleSheet,
-} from "@react-pdf/renderer";
 
 import Image from "next/image";
 import { TemplateType } from "@/types/templateType";
@@ -22,6 +14,7 @@ import Link from "next/link";
 import formatDateYYYYMMDD from "@/lib/formatDateYYYYMMDD";
 import { DicomStateEnum } from "@/enums/dicomStateEnum";
 import { supabase } from "@/lib/supabase";
+import ContentPDFDocument from "./ContentPDFDocument";
 
 function GeneratePDFButton({
   label,
@@ -41,108 +34,6 @@ function GeneratePDFButton({
   );
 }
 
-const styles = StyleSheet.create({
-  page: {
-    flexDirection: "column",
-    backgroundColor: "#ffffff",
-    padding: 60,
-    paddingBottom: 120,
-  },
-  section: {
-    flexGrow: 1,
-    position: "relative",
-  },
-  text: {
-    fontSize: 11,
-    minHeight: 17,
-    fontFamily: "Helvetica",
-    lineHeight: 1.6,
-  },
-  textSmall: {
-    fontSize: 11,
-    color: "#99a1af",
-  },
-  textPatient: {
-    fontSize: 11,
-    lineHeight: 1.6,
-  },
-  footer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    width: "100%",
-    height: "auto",
-    padding: 60,
-  },
-  htmlContent: {
-    fontFamily: "Helvetica",
-  },
-});
-
-const ContentDocument = ({
-  content,
-  activeTemplate,
-  dicom,
-}: {
-  content: string;
-  activeTemplate: TemplateType | null;
-  dicom: DicomType | null;
-}) => {
-  const lines = content?.split("\n");
-
-  return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.section}>
-          <ImagePdf
-            fixed
-            style={{ marginBottom: 24 }}
-            src={activeTemplate?.header_image_url}
-          />
-          <View style={{ marginBottom: 24 }}>
-            <Text style={styles.textPatient}>
-              <Text style={styles.textSmall}>Paciente: </Text>
-              {dicom?.patient_name}
-            </Text>
-            <Text style={styles.textPatient}>
-              <Text style={styles.textSmall}>Edad: </Text>{" "}
-              {dicom?.patient_age
-                ? `${extractAgeWidthUnit(dicom?.patient_age).value} ${extractAgeWidthUnit(dicom?.patient_age).unit}`
-                : null}
-            </Text>
-            <Text style={styles.textPatient}>
-              <Text style={styles.textSmall}>ID: </Text> {dicom?.patient_id}
-            </Text>
-            <Text style={styles.textPatient}>
-              <Text style={styles.textSmall}>Fecha: </Text>{" "}
-              {dicom?.study_date ? formatDateYYYYMMDD(dicom?.study_date) : null}
-            </Text>
-            <Text style={styles.textPatient}>
-              <Text style={styles.textSmall}>Descripción: </Text>
-              {dicom?.study_description}
-            </Text>
-          </View>
-          {lines.map((line, index) => {
-            return (
-              <Text key={index} style={styles.text}>
-                {line}
-              </Text>
-            );
-          })}
-          <ImagePdf
-            style={{ width: 160, height: "auto" }}
-            src={activeTemplate?.sign_image_url}
-          />
-        </View>
-        <View style={styles.footer} fixed>
-          <ImagePdf src={activeTemplate?.footer_image_url} />
-        </View>
-      </Page>
-    </Document>
-  );
-};
-
 export default function Report({
   templates,
   userId,
@@ -154,9 +45,10 @@ export default function Report({
 }) {
   const [dicomState, setDicomState] = useState("");
   const [value, setValue] = useState("");
-  const [activeTemplate, setActiveTemplate] = useState<TemplateType | null>(
-    null
-  );
+  const [activeTemplate, setActiveTemplate] = useState<
+    TemplateType | undefined
+  >();
+
   const PDFDownloadLink = useMemo(
     () =>
       dynamic(
@@ -174,26 +66,52 @@ export default function Report({
 
   const handleTemplateActive = (template: TemplateType) => {
     setActiveTemplate(template);
+    updateDicomTemplate(dicom.id, activeTemplate?.id);
   };
 
   const debouncedTextarea = useDebouncedCallback((value) => {
-    updateDicomReport(value, dicom.id);
+    updateDicomReport(value, dicom.id, activeTemplate?.id);
     setValue(value);
   }, 500);
 
-  const updateDicomReport = async (value: string, id: string) => {
+  const updateDicomReport = async (
+    value: string,
+    id: string,
+    templateId: string | undefined
+  ) => {
     try {
-      await supabase.from("dicom").update({ report: value }).eq("id", id);
+      await supabase
+        .from("dicom")
+        .update({ report: value, template_id: templateId })
+        .eq("id", id);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const updateDicomState = async (id: string, state: DicomStateEnum) => {
+  const updateDicomTemplate = async (
+    id: string,
+    templateId: string | undefined
+  ) => {
+    try {
+      await supabase
+        .from("dicom")
+        .update({ template_id: templateId })
+        .eq("id", id);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const updateDicomState = async (
+    id: string,
+    state: DicomStateEnum,
+    templateId: string | undefined
+  ) => {
     try {
       const { data } = await supabase
         .from("dicom")
-        .update({ state, report: value })
+        .update({ state, report: value, template_id: templateId })
         .eq("id", id)
         .select()
         .single();
@@ -207,12 +125,13 @@ export default function Report({
   useEffect(() => {
     if (templates && templates.length > 0) {
       setActiveTemplate(templates[0]);
+      updateDicomTemplate(dicom.id, activeTemplate?.id);
     }
   }, [templates]);
 
   useEffect(() => {
     if (!dicom.state) {
-      updateDicomState(dicom.id, DicomStateEnum.VIEWED);
+      updateDicomState(dicom.id, DicomStateEnum.VIEWED, activeTemplate?.id);
     }
   }, [dicom.id, dicom.state]);
 
@@ -226,7 +145,6 @@ export default function Report({
 
   return (
     <>
-      {dicomState}
       <div className="flex mb-6 items-center">
         <div
           className="grid gap-2 flex-grow-1"
@@ -251,26 +169,39 @@ export default function Report({
               </button>
             );
           })}
-          <div
+          <Link
+            href="/admin/templates"
             className="flex items-center cursor-pointer text-center p-1 transition-colors duration-300 text-gray-500 hover:text-cyan-400 group"
             title="Add template"
           >
             <Icon icon="solar:add-circle-linear" fontSize={32} />
-          </div>
+          </Link>
         </div>
-        {dicomState ? (
-          <div
-            className={`
-              ${dicomState ? "text-gray-700 border-gray-300 bg-gray-100 font-semibold uppercase" : ""}
+        <div className="flex items-center gap-3">
+          {dicomState ? (
+            <div
+              className={`
+              font-semibold uppercase
               ${dicomState === DicomStateEnum.VIEWED ? "text-yellow-500 border-yellow-300 bg-yellow-50" : ""}  
               ${dicomState === DicomStateEnum.DRAFT ? "text-orange-500 border-orange-100 bg-orange-50" : ""}  
-              ${dicomState === DicomStateEnum.COMPLETED ? "text-blue-600 border-blue-100 bg-blue-50" : ""}  
+              ${dicomState === DicomStateEnum.COMPLETED ? "text-cyan-600 border-cyan-200 bg-cyan-100" : ""}  
               py-1 px-5 text-sm uppercase rounded-full border`}
-            title={dicomState}
+              title={dicomState}
+            >
+              {dicomState}
+            </div>
+          ) : null}
+          <Link
+            target="_blank"
+            href={`/admin/dicoms/preview/${dicom.id}`}
+            title="PDF Preview"
+            type="button"
+            className="py-2 px-6 flex gap-3 items-center font-semibold  border bg-cyan-500 text-white rounded-full cursor-pointer"
           >
-            {dicomState}
-          </div>
-        ) : null}
+            <Icon icon="solar:file-text-outline" fontSize={24} />
+            <span>Preview</span>
+          </Link>
+        </div>
       </div>
       <div className="bg-gray-200">
         <div
@@ -353,7 +284,13 @@ export default function Report({
         </Link>
         {dicomState === DicomStateEnum.VIEWED ? (
           <button
-            onClick={() => updateDicomState(dicom.id, DicomStateEnum.DRAFT)}
+            onClick={() =>
+              updateDicomState(
+                dicom.id,
+                DicomStateEnum.DRAFT,
+                activeTemplate?.id
+              )
+            }
             title={`Save as ${DicomStateEnum.DRAFT}`}
             type="button"
             className="px-6 py-2 font-semibold text-orange-600 border-orange-200 cursor-pointer border bg-orange-50 rounded-xl"
@@ -363,7 +300,13 @@ export default function Report({
         ) : null}
         {dicomState === DicomStateEnum.DRAFT ? (
           <button
-            onClick={() => updateDicomState(dicom.id, DicomStateEnum.COMPLETED)}
+            onClick={() =>
+              updateDicomState(
+                dicom.id,
+                DicomStateEnum.COMPLETED,
+                activeTemplate?.id
+              )
+            }
             title={`Save as ${DicomStateEnum.COMPLETED}`}
             type="button"
             className="px-6 py-2 font-semibold text-cyan-600 border-cyan-200 cursor-pointer border bg-cyan-50 rounded-xl"
@@ -371,10 +314,19 @@ export default function Report({
             Save as {DicomStateEnum.COMPLETED}
           </button>
         ) : null}
+        <Link
+          target="_blank"
+          href={`/admin/dicoms/preview/${dicom.id}`}
+          title="PDF Preview"
+          type="button"
+          className="px-6 py-2 flex items-center text-white border  bg-cyan-500 rounded-xl cursor-pointer"
+        >
+          <Icon icon="solar:file-text-outline" fontSize={24} />
+        </Link>
         {PDFDownloadLink && dicomState === DicomStateEnum.COMPLETED ? (
           <PDFDownloadLink
             document={
-              <ContentDocument
+              <ContentPDFDocument
                 dicom={dicom}
                 activeTemplate={activeTemplate}
                 content={value}

@@ -54,7 +54,7 @@ export default function Aside({
   };
 
   return (
-    <div className="flex-shrink-0 print:hidden">
+    <div className="flex-shrink-0">
       <button
         onClick={() => setIsOpen((prev) => !prev)}
         className={`${
