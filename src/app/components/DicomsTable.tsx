@@ -30,7 +30,7 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
             <Link
               href={`/admin/dicoms/${id}`}
               key={id}
-              className="hover:border-cyan-400 hover:outline-8 transition-all outline-cyan-50 p-5 bg-white shadow rounded-xl"
+              className="hover:border-cyan-200 border border-transparent hover:outline-8 transition-all outline-cyan-50 p-5 bg-white shadow rounded-xl"
             >
               <div className="flex items-center gap-4 justify-between">
                 <div className="flex-1">

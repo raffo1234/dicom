@@ -152,7 +152,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           isDragActive
             ? "bg-cyan-50 border-cyan-100"
             : "bg-gray-50 border-gray-300"
-        } transition-colors duration-300 hover:border-cyan-200 hover:bg-white flex flex-col group items-center justify-center py-20 w-full border  border-dashed rounded-2xl cursor-pointer `}
+        } transition-all  hover:outline-8 outline-cyan-50 duration-300 hover:border-cyan-200 hover:bg-white flex flex-col group items-center justify-center py-20 w-full border  border-dashed rounded-2xl cursor-pointer `}
       >
         <Icon
           icon="solar:cloud-upload-broken"
