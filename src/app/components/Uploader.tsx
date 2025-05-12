@@ -159,9 +159,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           className="text-gray-700 mb-3 group-hover:text-cyan-400 transition-colors duration-300"
           fontSize={42}
         />
-        <h2 className="text-gray-400 text-sm mb-1">
-          .zip, .rar, .tar with .dcm files, less than 200MB
-        </h2>{" "}
+        <h2 className="text-gray-400 text-sm mb-1">.zip, .rar, .tar files</h2>{" "}
         {/* Note: The size limit "less than 200MB" is mentioned in the UI text but not enforced in the current code */}
         <h4 className="font-semibold">Drag and Drop your files here</h4>
         {files.length > 0 ? (
