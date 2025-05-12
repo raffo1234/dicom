@@ -37,6 +37,8 @@ export default async function Page({ params }: { params: Params }) {
     data: TemplateType[] | null;
   };
 
+  if (!user) return null;
+
   return (
     <>
       <div className="flex mb-4 print:hidden items-center justify-between">

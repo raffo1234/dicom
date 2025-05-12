@@ -49,6 +49,10 @@ export default function Aside({
   const [isOpen, setIsOpen] = useState(false);
   const currentPath = usePathname();
 
+  const closeMenu = () => {
+    return setIsOpen(false);
+  };
+
   return (
     <div className="flex-shrink-0 print:hidden">
       <button
@@ -93,7 +97,7 @@ export default function Aside({
                   className={`${
                     href === currentPath ? "bg-gray-100" : "hover:bg-gray-50"
                   }  rounded-xl py-3 px-4 gap-3.5 flex items-center transition-colors duration-300 `}
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeMenu}
                 >
                   <Icon icon={iconName} fontSize={19} />
                   <span>{title}</span>
