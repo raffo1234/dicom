@@ -18,5 +18,7 @@ export type DicomType = {
   state: DicomStateEnum;
   template_id: string;
   report: string;
+  gender: string;
+  birthday: string;
   template?: TemplateType | undefined;
 };

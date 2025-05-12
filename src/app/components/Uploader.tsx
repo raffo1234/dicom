@@ -92,6 +92,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             seriesDescription: dataSet.string("x0008103E"),
             modality: dataSet.string("x00080060"),
             studyDate: dataSet.string("x00080020"),
+            gender: dataSet.string("x00100040"),
+            birthday: dataSet.string("x00100030"),
             // Add more tags here as needed
           };
 
@@ -105,6 +107,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
               series_description: extractedMetadata.seriesDescription,
               modality: extractedMetadata.modality,
               study_date: extractedMetadata.studyDate,
+              gender: extractedMetadata.gender,
+              birthday: extractedMetadata.birthday,
             },
           ]);
         }
