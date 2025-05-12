@@ -15,7 +15,17 @@ export default async function Page() {
   return (
     <>
       <div className="flex mb-4 print:hidden items-center justify-between">
-        <h1 className=" font-semibold text-lg block">Dicoms</h1>
+        <div className="flex items-center gap-3">
+          <h1 className=" font-semibold text-lg block">Dicoms</h1>
+          <Link
+            href="/admin/dicom"
+            title="Upload Dicoms"
+            className="px-6 text-white  py-2 rounded-full bg-cyan-500 flex gap-2 items-center"
+          >
+            <span>Upload</span>
+            <Icon icon="solar:add-circle-linear" fontSize={24}></Icon>
+          </Link>
+        </div>
         <Link
           href="/admin/dicom"
           title="Upload DICOM files"
