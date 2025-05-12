@@ -4,8 +4,8 @@ import "../globals.css";
 import Header from "@/components/Header";
 
 export const metadata: Metadata = {
-  title: "Radiologist",
-  description: "Radiologist",
+  title: "Your Scans, Instantly Accessible",
+  description: "Process DICOM & Create Reports with Ease",
   icons: {
     icon: "/favicon.png",
   },
