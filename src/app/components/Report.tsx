@@ -142,9 +142,12 @@ export default function Report({
 }: {
   templates: TemplateType[] | null;
   userId?: string;
-  dicom: DicomType | null;
+  dicom: DicomType;
 }) {
   const [value, setValue] = useState("");
+  const [activeTemplate, setActiveTemplate] = useState<TemplateType | null>(
+    null
+  );
   const PDFDownloadLink = useMemo(
     () =>
       dynamic(
@@ -156,10 +159,8 @@ export default function Report({
           ),
         }
       ),
-    [value]
-  );
-  const [activeTemplate, setActiveTemplate] = useState<TemplateType | null>(
-    null
+    [value, activeTemplate]
+    // value and activeTemplate are needed because @react-pdf/renderer needs to re render to load correctly
   );
 
   const handleTemplateActive = (template: TemplateType) => {
@@ -176,8 +177,6 @@ export default function Report({
     setValue(event.target.value);
   };
 
-  if (!templates) return null;
-
   return (
     <>
       <div className="flex mb-6 items-center">
@@ -187,7 +186,7 @@ export default function Report({
             gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
           }}
         >
-          {templates.map((template) => {
+          {templates?.map((template) => {
             const { id, name } = template;
             return (
               <button

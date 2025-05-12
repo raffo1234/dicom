@@ -49,7 +49,9 @@ export default async function Page({ params }: { params: Params }) {
           <Icon icon="solar:backspace-line-duotone" fontSize={36} />
         </Link>
       </div>
-      <Report templates={templates} dicom={dicom} userId={userId} />
+      {dicom ? (
+        <Report templates={templates} dicom={dicom} userId={userId} />
+      ) : null}
     </>
   );
 }
