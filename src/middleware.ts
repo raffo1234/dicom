@@ -10,11 +10,7 @@ export async function middleware(request: NextRequest) {
 
   const isAuthenticated = !!session;
 
-  if (
-    (request.nextUrl.pathname.startsWith("/admin") ||
-      request.nextUrl.pathname.includes("/admin/")) &&
-    !isAuthenticated
-  ) {
+  if (request.nextUrl.pathname.startsWith("/admin") && !isAuthenticated) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
