@@ -55,7 +55,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   const handleUpload = async () => {
     if (files.length === 0) {
-      setError("Please select Dicom files.");
+      setError("Please select a compressed file containing .dcim files.");
       return;
     }
 
@@ -78,8 +78,30 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
         if (fileExt === "zip" || fileExt === "rar" || fileExt === "tar") {
           const archive = await Archive.open(selectedFile);
-          const obj = await archive.extractFiles();
-          const firstFile = Object.values(obj)[0] as File;
+          const extractedFiles = await archive.extractFiles();
+
+          let dcmFile: File | undefined = undefined;
+          let dcmFilePath: string | undefined = undefined;
+
+          for (const filePath in extractedFiles) {
+            // Ensure the property belongs directly to the object
+            if (
+              Object.prototype.hasOwnProperty.call(extractedFiles, filePath)
+            ) {
+              const file = extractedFiles[filePath];
+
+              if (filePath.toLowerCase().endsWith(".dcm")) {
+                dcmFile = file; // Found the first DCM file (which is a File object)
+                // dcmFilePath = filePath; // Store the path too
+                console.log(`Found .dcm file: ${filePath}`);
+                break; // Stop searching after finding the first one
+              }
+            }
+          }
+
+          if (!dcmFile) return;
+
+          const firstFile = dcmFile as File;
           const entry_file_data = await firstFile.arrayBuffer();
           const byteArray: Uint8Array = new Uint8Array(entry_file_data);
           const dataSet: DicomDataSet = dicomParser.parseDicom(byteArray);
@@ -95,7 +117,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             gender: dataSet.string("x00100040"),
             birthday: dataSet.string("x00100030"),
             institution: dataSet.string("x00080080"),
-            // Add more tags here as needed
           };
 
           await supabase.from("dicom").insert([
@@ -143,9 +164,25 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
+      "application/octet-stream": [
+        ".rar",
+        ".7z",
+        ".tar",
+        ".gz",
+        ".bz2",
+        ".xz",
+        ".lz4",
+        ".zst",
+      ],
       "application/zip": [".zip"],
-      "application/x-rar-compressed": [".rar"],
       "application/x-tar": [".tar"],
+      "application/x-rar-compressed": [".rar"],
+      "application/x-7z-compressed": [".7z"],
+      "application/gzip": [".gz"],
+      "application/x-bzip2": [".bz2"],
+      "application/x-xz": [".xz"],
+      "application/x-lz4": [".lz4"],
+      "application/zstd": [".zst"],
     },
     maxSize: 200 * 1024 * 1024, // 200MB
   });
@@ -165,8 +202,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           className="text-gray-700 mb-3 group-hover:text-cyan-400 transition-colors duration-300"
           fontSize={42}
         />
-        <h2 className="text-gray-400 text-sm mb-1">.zip, .rar, .tar files</h2>{" "}
-        {/* Note: The size limit "less than 200MB" is mentioned in the UI text but not enforced in the current code */}
+        <h2 className="text-gray-400 text-sm mb-1">.zip, .rar, .tar files</h2>
         <h4 className="font-semibold">Drag and Drop your files here</h4>
         {files.length > 0 ? (
           <div className="border border-gray-200 rounded-xl mt-6 max-w-md">
@@ -209,7 +245,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             <Icon icon="solar:upload-minimalistic-linear" fontSize={26} />
             <span>
               {uploading
-                ? "Processing..." // Changed text to reflect processing, not just uploading
+                ? "Processing..."
                 : `Process File${files.length === 1 ? "" : "s"}`}
             </span>
           </button>
