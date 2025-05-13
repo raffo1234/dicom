@@ -9,29 +9,41 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 
 export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
   return (
-    <section className="w-full p-3 overflow-x-scroll">
-      <div className="bg-white border-gray-200 rounded-xl py-4 shadow">
-        <table className="w-full">
+    <section className="w-full p-3">
+      <div className="bg-white border-gray-200 rounded-xl py-4 shadow w-[1200px] overflow-auto">
+        <table className="w-[1200px]">
           <thead>
             <tr className="border-b border-gray-200">
-              <th className="uppercase text-sm font-semibold pb-4">ID</th>
-              <th className="uppercase text-sm font-semibold pb-4">
+              <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
+                ID
+              </th>
+              <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
                 Institution
               </th>
-              <th className="uppercase text-sm font-semibold pb-4">Name</th>
-              <th className="uppercase text-sm font-semibold pb-4">Gender</th>
-              <th className="uppercase text-sm font-semibold pb-4">Age</th>
-              <th className="uppercase text-sm font-semibold pb-4">Birthday</th>
-              <th className="uppercase text-sm font-semibold pb-4">
+              <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
+                Name
+              </th>
+              <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
+                Gender
+              </th>
+              <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
+                Age
+              </th>
+              <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
+                Birthday
+              </th>
+              <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
                 Description
               </th>
-              <th className="uppercase text-sm font-semibold pb-4">
+              <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
                 Study Date
               </th>
-              <th className="uppercase text-sm font-semibold pb-4">
+              <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
                 Receipt Date
               </th>
-              <th className="uppercase text-sm font-semibold pb-4">Modality</th>
+              <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
+                Modality
+              </th>
               <th></th>
             </tr>
           </thead>
@@ -68,71 +80,114 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
                     <td>
                       <Link
                         href={`/admin/dicoms/${id}`}
-                        className="p-4 text-sm font-semibold"
+                        className="p-5 text-sm"
                       >
                         {patient_id}
                       </Link>
                     </td>
-                    <td className="p-4">{institution}</td>
-                    <td className="p-4">
-                      <div
-                        style={{ overflowWrap: "break-word" }}
-                        className="wrap-break-word text-sm mb-2 font-semibold"
-                      >
-                        {patient_name}
-                      </div>
-                    </td>
-                    <td className="p-4">{gender}</td>
-                    <td className="p-4">
-                      <div className="text-gray-600 text-sm whitespace-nowrap">
-                        {extractAgeWidthUnit(patient_age).value}{" "}
-                        {extractAgeWidthUnit(patient_age).unit}
-                      </div>
-                    </td>
-                    <td className="p-4 text-gray-500 text-sm whitespace-nowrap">
-                      {formatDateYYYYMMDD(birthday)}
-                    </td>
-                    <td className="p-4">
-                      <div className="text-sm mb-2 font-semibold">
-                        {study_description}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="text-gray-500 text-sm whitespace-nowrap">
-                        <span>{formatDateYYYYMMDD(study_date)}</span>
-                      </div>
-                    </td>
-                    <td className="p-4 text-gray-500 text-sm whitespace-nowrap">
-                      {formatInTimeZone(
-                        createdAt,
-                        "America/Lima",
-                        "dd MMMM yyyy, HH:mm a",
-                        {
-                          locale: es,
-                        }
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <div className="text-gray-500 text-sm">{modality}</div>
-                    </td>
-                    <td className="p-4">
-                      <Link
-                        target="_blank"
-                        href={`/admin/dicoms/preview/${id}`}
-                        title="PDF Preview"
-                        className="py-2 px-6 flex gap-3 items-center font-semibold  border bg-cyan-500 text-white rounded-full cursor-pointer"
-                      >
-                        <Icon icon="solar:eye-linear" fontSize={24} />
-                        <span>Preview</span>
-                      </Link>
+                    <td className="whitespace-nowrap">
                       <Link
                         href={`/admin/dicoms/${id}`}
-                        title="Inform"
-                        className="py-2 px-6 flex gap-3 items-center font-semibold border bg-rose-500 text-white rounded-full cursor-pointer"
+                        className="p-5 text-sm"
                       >
-                        <Icon icon="solar:document-add-linear" fontSize={24} />
-                        <span>Report</span>
+                        {institution}
                       </Link>
+                    </td>
+                    <td className="whitespace-nowrap">
+                      <Link
+                        href={`/admin/dicoms/${id}`}
+                        className="p-5 text-sm"
+                      >
+                        {patient_name}
+                      </Link>
+                    </td>
+                    <td className="p-5">
+                      <Link
+                        href={`/admin/dicoms/${id}`}
+                        className="p-5 text-sm"
+                      >
+                        {gender}
+                      </Link>
+                    </td>
+                    <td className="whitespace-nowrap">
+                      <Link
+                        href={`/admin/dicoms/${id}`}
+                        className="p-5 text-sm"
+                      >
+                        {extractAgeWidthUnit(patient_age).value}{" "}
+                        {extractAgeWidthUnit(patient_age).unit}
+                      </Link>
+                    </td>
+                    <td className="whitespace-nowrap">
+                      <Link
+                        href={`/admin/dicoms/${id}`}
+                        className="p-5 text-sm"
+                      >
+                        {formatDateYYYYMMDD(birthday)}
+                      </Link>
+                    </td>
+                    <td className="whitespace-nowrap">
+                      <Link
+                        href={`/admin/dicoms/${id}`}
+                        className="p-5 text-sm"
+                      >
+                        {study_description}
+                      </Link>
+                    </td>
+                    <td className="whitespace-nowrap">
+                      <Link
+                        href={`/admin/dicoms/${id}`}
+                        className="p-5 text-sm"
+                      >
+                        {formatDateYYYYMMDD(study_date)}
+                      </Link>
+                    </td>
+                    <td className="whitespace-nowrap">
+                      <Link
+                        href={`/admin/dicoms/${id}`}
+                        className="p-5 text-sm"
+                      >
+                        {formatInTimeZone(
+                          createdAt,
+                          "America/Lima",
+                          "dd MMMM yyyy, HH:mm a",
+                          {
+                            locale: es,
+                          }
+                        )}
+                      </Link>
+                    </td>
+                    <td className="p-5">
+                      <Link
+                        href={`/admin/dicoms/${id}`}
+                        className="p-5 text-sm"
+                      >
+                        {modality}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-3">
+                        <Link
+                          href={`/admin/dicoms/${id}`}
+                          title="Inform"
+                          className="py-2 px-6 flex gap-3 items-center font-semibold border bg-cyan-500 text-white rounded-full cursor-pointer"
+                        >
+                          <Icon
+                            icon="solar:document-add-linear"
+                            fontSize={24}
+                          />
+                          <span>Inform</span>
+                        </Link>
+                        <Link
+                          target="_blank"
+                          href={`/admin/dicoms/preview/${id}`}
+                          title="PDF Preview"
+                          className="py-2 px-6 flex gap-3 items-center font-semibold  bg-gray-200  rounded-full cursor-pointer"
+                        >
+                          <Icon icon="solar:eye-linear" fontSize={24} />
+                          <span>Preview</span>
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 );
