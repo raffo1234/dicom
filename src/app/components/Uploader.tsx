@@ -12,23 +12,44 @@ Archive.init({
   workerUrl: "/libarchive.js/dist/worker-bundle.js",
 });
 
-interface DicomDataSet {
-  string: (tag: string) => string | undefined;
-  // Add other methods if you use them, e.g.:
-  // int16: (tag: string) => number | undefined;
-  // sequence: (tag: string) => { items: Array<DicomDataSet | any> } | undefined;
-  // ...
+interface DicomElement {
+  tag: string; // Hexadecimal tag string (e.g., 'x00100010')
+  vr?: string; // Value Representation (e.g., 'PN', 'UI', 'DA') - Optional
+  length: number; // Length of the value field
+  dataOffset: number; // Offset in the byte stream where the value starts
+
+  // If this element is a Sequence (SQ), it has an 'items' array.
+  // The items in the array are also DicomElement objects.
+  items?: DicomElement[]; // Items within a sequence are also DicomElements
+
+  // If this element is an item within a Sequence (SQ), it has a 'dataSet' property
+  // which is a nested DicomDataSet. This is optional because not all elements are sequence items.
+  dataSet?: DicomDataSet; // Nested DataSet for sequence items - Optional
+
+  // Add other properties if you use them (e.g., fragments for pixel data)
 }
 
-interface DicomMetadataResponse {
+interface DicomDataSet {
+  // elements is a map where keys are tag strings and values are DicomElement objects
+  elements: { [tag: string]: DicomElement };
+  // byteArray is the underlying byte array the dataset was parsed from
+  byteArray: Uint8Array;
+
+  // Methods for accessing element values - only including 'string' as used in the code
+  string(tag: string): string | undefined;
+  // Add other methods like int16, float, bytes etc. if you use them and need strict typing
+}
+
+interface DicomMetadata {
+  patientId?: string;
   patientName?: string;
-  patientID?: string;
   patientAge?: string;
   studyDescription?: string;
-  seriesDescription?: string;
   modality?: string;
   studyDate?: string;
-  [key: string]: string | undefined;
+  patientSex?: string;
+  patientBirthDate?: string;
+  institutionName?: string;
 }
 
 type ImageUploaderProps = {
@@ -40,42 +61,117 @@ interface ExtractedFilesObject {
   [name: string]: File | ExtractedFilesObject;
 }
 
-async function insertDataSetToDb(userId: string, dataSet: DicomDataSet) {
-  const extractedMetadata: DicomMetadataResponse = {
-    patientName: dataSet.string("x00100010"),
-    patientID: dataSet.string("x00100020"),
-    patientAge: dataSet.string("x00101010"),
-    studyDescription: dataSet.string("x00081030"),
-    seriesDescription: dataSet.string("x0008103E"),
-    modality: dataSet.string("x00080060"),
-    studyDate: dataSet.string("x00080020"),
-    gender: dataSet.string("x00100040"),
-    birthday: dataSet.string("x00100030"),
-    institution: dataSet.string("x00080080"),
-  };
-
+async function insertDataSetToDb(userId: string, dataSet: DicomMetadata) {
   await supabase.from("dicom").insert([
     {
       user_id: userId,
-      patient_name: extractedMetadata.patientName,
-      patient_id: extractedMetadata.patientID,
-      patient_age: extractedMetadata.patientAge,
-      study_description: extractedMetadata.studyDescription,
-      series_description: extractedMetadata.seriesDescription,
-      modality: extractedMetadata.modality,
-      study_date: extractedMetadata.studyDate,
-      gender: extractedMetadata.gender,
-      birthday: extractedMetadata.birthday,
-      institution: extractedMetadata.institution,
+      patient_name: dataSet.patientName,
+      patient_id: dataSet.patientId,
+      patient_age: dataSet.patientAge,
+      study_description: dataSet.studyDescription,
+      modality: dataSet.modality,
+      study_date: dataSet.studyDate,
+      gender: dataSet.patientSex,
+      birthday: dataSet.patientBirthDate,
+      institution: dataSet.institutionName,
     },
   ]);
+}
+
+interface DicomdirInfo {
+  patientName?: string;
+  patientId?: string;
+  patientBirthDate?: string;
+  patientSex?: string;
+  studyDate?: string;
+  patientAge?: string;
+  studyDescription?: string;
+  institutionName?: string;
+  modality?: string;
+}
+
+function extractPatientAndStudyInfo(
+  directoryRecordItems: DicomElement[]
+): DicomdirInfo {
+  const dicomdirInfo: DicomdirInfo = {}; // Initialize as an empty object
+
+  let patientFound = false;
+  let studyFound = false;
+  let institutionFound = false;
+  let modalityFound = false;
+
+  for (const item of directoryRecordItems) {
+    if (patientFound && studyFound && institutionFound && modalityFound) {
+      break;
+    }
+
+    const recordDataSet: DicomDataSet | undefined = item.dataSet;
+
+    if (!recordDataSet) {
+      console.warn("Skipping record item with no dataSet.");
+      continue;
+    }
+
+    if (!institutionFound) {
+      const institutionName = recordDataSet.string("x00080080");
+      if (institutionName !== undefined && institutionName.trim() !== "") {
+        console.warn("Found first Institution Name:", institutionName);
+        dicomdirInfo.institutionName = institutionName;
+        institutionFound = true;
+      }
+    }
+
+    if (!modalityFound) {
+      const modality = recordDataSet.string("x00080060");
+      if (modality !== undefined && modality.trim() !== "") {
+        console.warn("Found first Modality:", modality);
+        dicomdirInfo.modality = modality;
+        modalityFound = true;
+      }
+    }
+
+    const recordType: string | undefined = recordDataSet.string("x00041430");
+
+    switch (recordType) {
+      case "PATIENT":
+        if (!patientFound) {
+          console.warn("Found first Patient record.");
+          dicomdirInfo.patientName = recordDataSet.string("x00100010");
+          dicomdirInfo.patientId = recordDataSet.string("x00100020");
+          dicomdirInfo.patientBirthDate = recordDataSet.string("x00100030");
+          dicomdirInfo.patientSex = recordDataSet.string("x00100040");
+          dicomdirInfo.patientAge = recordDataSet.string("x00101010");
+          patientFound = true;
+        }
+        break;
+      case "STUDY":
+        if (!studyFound) {
+          console.warn("Found first Study record.");
+          dicomdirInfo.studyDate = recordDataSet.string("x00080020");
+          dicomdirInfo.studyDescription = recordDataSet.string("x00081030");
+          studyFound = true;
+        }
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  return dicomdirInfo;
 }
 
 function findFirstDcmFileRecursive(
   item: File | ExtractedFilesObject
 ): File | undefined {
   if (item instanceof File) {
-    if (item.name.toLowerCase().endsWith(".dcm")) {
+    const lowerCaseName = item.name.toLowerCase();
+
+    if (
+      (lowerCaseName === "dicomdir" &&
+        item.type === "application/octet-stream") ||
+      lowerCaseName.endsWith(".dcm")
+    ) {
       return item;
     }
   } else if (typeof item === "object" && item !== null) {
@@ -141,12 +237,51 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
           const dcmFile = findFirstDcmFileRecursive(extractedFiles);
 
-          if (dcmFile) {
-            const dcmFileArrayBuffer = await dcmFile.arrayBuffer();
-            const byteArray: Uint8Array = new Uint8Array(dcmFileArrayBuffer);
-            const dataSet: DicomDataSet = dicomParser.parseDicom(byteArray);
+          const isDICOMDIR =
+            dcmFile?.name.toLowerCase() === "dicomdir" &&
+            dcmFile.type === "application/octet-stream";
 
-            await insertDataSetToDb(userId, dataSet);
+          if (dcmFile) {
+            if (isDICOMDIR) {
+              const dcmFileArrayBuffer = await dcmFile.arrayBuffer();
+              const byteArray: Uint8Array = new Uint8Array(dcmFileArrayBuffer);
+              const dataSet: DicomDataSet = dicomParser.parseDicom(byteArray);
+
+              const directoryRecordSequenceElement: DicomElement | undefined =
+                dataSet.elements.x00041220;
+
+              if (!directoryRecordSequenceElement?.items) {
+                fileErrors.push(
+                  "Could not find Directory Record Sequence (Tag 0004,1220) in the file."
+                );
+              } else {
+                const directoryRecordItems: DicomElement[] =
+                  directoryRecordSequenceElement.items;
+
+                const extractedMetadata: DicomMetadata =
+                  extractPatientAndStudyInfo(directoryRecordItems);
+
+                await insertDataSetToDb(userId, extractedMetadata);
+              }
+            } else {
+              const dcmFileArrayBuffer = await dcmFile.arrayBuffer();
+              const byteArray: Uint8Array = new Uint8Array(dcmFileArrayBuffer);
+              const dataSet: DicomDataSet = dicomParser.parseDicom(byteArray);
+
+              const extractedMetadata = {
+                patientName: dataSet.string("x00100010"),
+                patientId: dataSet.string("x00100020"),
+                patientAge: dataSet.string("x00101010"),
+                studyDescription: dataSet.string("x00081030"),
+                modality: dataSet.string("x00080060"),
+                studyDate: dataSet.string("x00080020"),
+                patientSex: dataSet.string("x00100040"),
+                patientBirthDate: dataSet.string("x00100030"),
+                institutionName: dataSet.string("x00080080"),
+              };
+
+              await insertDataSetToDb(userId, extractedMetadata);
+            }
           } else {
             fileErrors.push("No .dicm files found. Let's try again");
           }

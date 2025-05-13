@@ -15,25 +15,25 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
           <thead>
             <tr className="border-b border-gray-200">
               <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
-                ID
+                Patient ID
               </th>
               <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
-                Institution
+                Institution Name
               </th>
               <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
-                Name
+                Patient Name
               </th>
               <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
-                Gender
+                Patient Sex
               </th>
               <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
                 Age
               </th>
               <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
-                Birthday
+                Birth Date
               </th>
               <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
-                Description
+                Study Description
               </th>
               <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
                 Study Date
@@ -105,7 +105,7 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
                       {formatInTimeZone(
                         createdAt,
                         "America/Lima",
-                        "dd MMMM yyyy, HH:mm a",
+                        "dd MMMM yyyy, hh:mm a",
                         {
                           locale: es,
                         }
