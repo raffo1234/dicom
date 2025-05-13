@@ -12,23 +12,32 @@ import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 
+type SortDirection = "asc" | "desc" | null;
+
 const fetcher = async (
-  key: [string, number, number]
+  key: [string, number, number, string | null, SortDirection]
 ): Promise<DicomType[] | null> => {
-  const [tableName, page, pageSize] = key;
+  const [tableName, page, pageSize, sortColumn, sortDirection] = key;
 
   const start = (page - 1) * pageSize;
   const end = start + pageSize - 1;
 
-  const { data, error } = await supabase
+  let query = supabase
     .from(tableName)
     .select("*, user(id, image_url, first_name, last_name)")
-    .range(start, end)
-    .order("created_at", { ascending: false });
+    .range(start, end);
+
+  if (sortColumn && sortDirection) {
+    query = query.order(sortColumn, { ascending: sortDirection === "asc" });
+  } else {
+    query = query.order("created_at", { ascending: false });
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error(`SWR Error fetching data from "${tableName}":`, error);
-    throw error; // Throw the error so SWR can handle it
+    throw error;
   }
 
   console.log(
@@ -41,9 +50,11 @@ const pageSize: number = 8;
 
 export default function Pagination({ tableName }: { tableName: "dicom" }) {
   const [page, setPage] = useState<number>(1);
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
   const { data, error, isLoading } = useSWR<DicomType[] | null>(
-    [tableName, page, pageSize],
+    [tableName, page, pageSize, sortColumn, sortDirection],
     fetcher
   );
 
@@ -51,17 +62,30 @@ export default function Pagination({ tableName }: { tableName: "dicom" }) {
     data !== undefined && data !== null && data.length === pageSize;
 
   const handlePreviousPage = () => {
-    // Decrement page number, but not below 1
     if (page > 1) {
       setPage((prevPage) => prevPage - 1);
     }
   };
 
   const handleNextPage = () => {
-    // Increment page number only if there might be more data
     if (hasMore) {
       setPage((prevPage) => prevPage + 1);
     }
+  };
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection((prevDirection) => {
+        if (prevDirection === "asc") return "desc";
+        if (prevDirection === "desc") return null;
+        return "asc";
+      });
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+    // Reset to the first page when sorting changes
+    setPage(1);
   };
 
   const startItemNumber = (page - 1) * pageSize + 1;
@@ -97,11 +121,39 @@ export default function Pagination({ tableName }: { tableName: "dicom" }) {
                 <th className="text-left uppercase text-xs font-semibold py-4 pl-4">
                   Patient ID
                 </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 pl-4">
+                <th
+                  onClick={() => handleSort("institution")}
+                  className="text-left uppercase text-xs font-semibold py-4 pl-4 cursor-pointer"
+                >
                   Institution Name
+                  {sortColumn === "institution" && sortDirection && (
+                    <Icon
+                      icon={
+                        sortDirection === "asc"
+                          ? "solar:arrow-up-outline"
+                          : "solar:arrow-down-outline"
+                      }
+                      className="inline-block ml-1"
+                      fontSize={12}
+                    />
+                  )}
                 </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 pl-4">
+                <th
+                  onClick={() => handleSort("patient_name")}
+                  className="text-left uppercase text-xs font-semibold py-4 pl-4 cursor-pointer"
+                >
                   Patient Name
+                  {sortColumn === "patient_name" && sortDirection && (
+                    <Icon
+                      icon={
+                        sortDirection === "asc"
+                          ? "solar:arrow-up-outline"
+                          : "solar:arrow-down-outline"
+                      }
+                      className="inline-block ml-1"
+                      fontSize={12}
+                    />
+                  )}
                 </th>
                 <th className="text-left uppercase text-xs font-semibold py-4 pl-4">
                   Patient Sex

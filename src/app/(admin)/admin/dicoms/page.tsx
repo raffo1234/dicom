@@ -1,4 +1,3 @@
-import DicomsTable from "@/components/DicomsTable";
 import Pagination from "@/components/Pagination";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Link from "next/link";
