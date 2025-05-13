@@ -40,6 +40,37 @@ interface ExtractedFilesObject {
   [name: string]: File | ExtractedFilesObject;
 }
 
+async function insertDataSetToDb(userId: string, dataSet: DicomDataSet) {
+  const extractedMetadata: DicomMetadataResponse = {
+    patientName: dataSet.string("x00100010"),
+    patientID: dataSet.string("x00100020"),
+    patientAge: dataSet.string("x00101010"),
+    studyDescription: dataSet.string("x00081030"),
+    seriesDescription: dataSet.string("x0008103E"),
+    modality: dataSet.string("x00080060"),
+    studyDate: dataSet.string("x00080020"),
+    gender: dataSet.string("x00100040"),
+    birthday: dataSet.string("x00100030"),
+    institution: dataSet.string("x00080080"),
+  };
+
+  await supabase.from("dicom").insert([
+    {
+      user_id: userId,
+      patient_name: extractedMetadata.patientName,
+      patient_id: extractedMetadata.patientID,
+      patient_age: extractedMetadata.patientAge,
+      study_description: extractedMetadata.studyDescription,
+      series_description: extractedMetadata.seriesDescription,
+      modality: extractedMetadata.modality,
+      study_date: extractedMetadata.studyDate,
+      gender: extractedMetadata.gender,
+      birthday: extractedMetadata.birthday,
+      institution: extractedMetadata.institution,
+    },
+  ]);
+}
+
 function findFirstDcmFileRecursive(
   item: File | ExtractedFilesObject
 ): File | undefined {
@@ -111,39 +142,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           const dcmFile = findFirstDcmFileRecursive(extractedFiles);
 
           if (dcmFile) {
-            const firstFile = dcmFile as File;
-            const entry_file_data = await firstFile.arrayBuffer();
-            const byteArray: Uint8Array = new Uint8Array(entry_file_data);
+            const dcmFileArrayBuffer = await dcmFile.arrayBuffer();
+            const byteArray: Uint8Array = new Uint8Array(dcmFileArrayBuffer);
             const dataSet: DicomDataSet = dicomParser.parseDicom(byteArray);
 
-            const extractedMetadata: DicomMetadataResponse = {
-              patientName: dataSet.string("x00100010"),
-              patientID: dataSet.string("x00100020"),
-              patientAge: dataSet.string("x00101010"),
-              studyDescription: dataSet.string("x00081030"),
-              seriesDescription: dataSet.string("x0008103E"),
-              modality: dataSet.string("x00080060"),
-              studyDate: dataSet.string("x00080020"),
-              gender: dataSet.string("x00100040"),
-              birthday: dataSet.string("x00100030"),
-              institution: dataSet.string("x00080080"),
-            };
-
-            await supabase.from("dicom").insert([
-              {
-                user_id: userId,
-                patient_name: extractedMetadata.patientName,
-                patient_id: extractedMetadata.patientID,
-                patient_age: extractedMetadata.patientAge,
-                study_description: extractedMetadata.studyDescription,
-                series_description: extractedMetadata.seriesDescription,
-                modality: extractedMetadata.modality,
-                study_date: extractedMetadata.studyDate,
-                gender: extractedMetadata.gender,
-                birthday: extractedMetadata.birthday,
-                institution: extractedMetadata.institution,
-              },
-            ]);
+            await insertDataSetToDb(userId, dataSet);
           } else {
             fileErrors.push("No .dicm files found. Let's try again");
           }
