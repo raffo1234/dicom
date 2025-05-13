@@ -11,7 +11,7 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
   return (
     <section className="w-full p-3">
       <div className="bg-white border-gray-200 rounded-xl py-4 shadow w-[1200px] overflow-auto">
-        <table className="w-[1200px]">
+        <table className="w-[1200px] text-sm">
           <thead>
             <tr className="border-b border-gray-200">
               <th className="text-left uppercase text-xs font-semibold pb-4 pl-4">
@@ -85,86 +85,33 @@ export default function DicomsTable({ dicoms }: { dicoms: DicomType[] }) {
                         {patient_id}
                       </Link>
                     </td>
-                    <td className="whitespace-nowrap">
-                      <Link
-                        href={`/admin/dicoms/${id}`}
-                        className="p-5 text-sm"
-                      >
-                        {institution}
-                      </Link>
+                    <td className="whitespace-nowrap p-5">{institution}</td>
+                    <td className="whitespace-nowrap p-5">{patient_name}</td>
+                    <td className="p-5">{gender}</td>
+                    <td className="whitespace-nowrap p-5">
+                      {extractAgeWidthUnit(patient_age).value}{" "}
+                      {extractAgeWidthUnit(patient_age).unit}
                     </td>
-                    <td className="whitespace-nowrap">
-                      <Link
-                        href={`/admin/dicoms/${id}`}
-                        className="p-5 text-sm"
-                      >
-                        {patient_name}
-                      </Link>
+                    <td className="whitespace-nowrap p-5">
+                      {formatDateYYYYMMDD(birthday)}
                     </td>
-                    <td className="p-5">
-                      <Link
-                        href={`/admin/dicoms/${id}`}
-                        className="p-5 text-sm"
-                      >
-                        {gender}
-                      </Link>
+                    <td className="whitespace-nowrap p-5">
+                      {study_description}
                     </td>
-                    <td className="whitespace-nowrap">
-                      <Link
-                        href={`/admin/dicoms/${id}`}
-                        className="p-5 text-sm"
-                      >
-                        {extractAgeWidthUnit(patient_age).value}{" "}
-                        {extractAgeWidthUnit(patient_age).unit}
-                      </Link>
+                    <td className="whitespace-nowrap p-5">
+                      {formatDateYYYYMMDD(study_date)}
                     </td>
-                    <td className="whitespace-nowrap">
-                      <Link
-                        href={`/admin/dicoms/${id}`}
-                        className="p-5 text-sm"
-                      >
-                        {formatDateYYYYMMDD(birthday)}
-                      </Link>
+                    <td className="whitespace-nowrap p-5">
+                      {formatInTimeZone(
+                        createdAt,
+                        "America/Lima",
+                        "dd MMMM yyyy, HH:mm a",
+                        {
+                          locale: es,
+                        }
+                      )}
                     </td>
-                    <td className="whitespace-nowrap">
-                      <Link
-                        href={`/admin/dicoms/${id}`}
-                        className="p-5 text-sm"
-                      >
-                        {study_description}
-                      </Link>
-                    </td>
-                    <td className="whitespace-nowrap">
-                      <Link
-                        href={`/admin/dicoms/${id}`}
-                        className="p-5 text-sm"
-                      >
-                        {formatDateYYYYMMDD(study_date)}
-                      </Link>
-                    </td>
-                    <td className="whitespace-nowrap">
-                      <Link
-                        href={`/admin/dicoms/${id}`}
-                        className="p-5 text-sm"
-                      >
-                        {formatInTimeZone(
-                          createdAt,
-                          "America/Lima",
-                          "dd MMMM yyyy, HH:mm a",
-                          {
-                            locale: es,
-                          }
-                        )}
-                      </Link>
-                    </td>
-                    <td className="p-5">
-                      <Link
-                        href={`/admin/dicoms/${id}`}
-                        className="p-5 text-sm"
-                      >
-                        {modality}
-                      </Link>
-                    </td>
+                    <td className="p-5">{modality}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-3">
                         <Link

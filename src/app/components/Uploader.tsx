@@ -36,6 +36,34 @@ type ImageUploaderProps = {
   onUploadSuccess?: () => void;
 };
 
+interface ExtractedFilesObject {
+  [name: string]: File | ExtractedFilesObject;
+}
+
+function findFirstDcmFileRecursive(
+  item: File | ExtractedFilesObject
+): File | undefined {
+  if (item instanceof File) {
+    if (item.name.toLowerCase().endsWith(".dcm")) {
+      return item;
+    }
+  } else if (typeof item === "object" && item !== null) {
+    for (const itemName in item) {
+      if (Object.prototype.hasOwnProperty.call(item, itemName)) {
+        const nestedItem = item[itemName];
+
+        const foundFile = findFirstDcmFileRecursive(nestedItem);
+
+        if (foundFile) {
+          return foundFile;
+        }
+      }
+    }
+  }
+
+  return undefined;
+}
+
 const ImageUploader: React.FC<ImageUploaderProps> = ({
   userId,
   onUploadSuccess,
@@ -80,60 +108,49 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           const archive = await Archive.open(selectedFile);
           const extractedFiles = await archive.extractFiles();
 
-          let dcmFile: File | undefined = undefined;
-          let dcmFilePath: string | undefined = undefined;
+          const dcmFile = findFirstDcmFileRecursive(extractedFiles);
 
-          for (const filePath in extractedFiles) {
-            // Ensure the property belongs directly to the object
-            if (
-              Object.prototype.hasOwnProperty.call(extractedFiles, filePath)
-            ) {
-              const file = extractedFiles[filePath];
+          if (dcmFile) {
+            const firstFile = dcmFile as File;
+            const entry_file_data = await firstFile.arrayBuffer();
+            const byteArray: Uint8Array = new Uint8Array(entry_file_data);
+            const dataSet: DicomDataSet = dicomParser.parseDicom(byteArray);
 
-              if (filePath.toLowerCase().endsWith(".dcm")) {
-                dcmFile = file; // Found the first DCM file (which is a File object)
-                // dcmFilePath = filePath; // Store the path too
-                console.log(`Found .dcm file: ${filePath}`);
-                break; // Stop searching after finding the first one
-              }
-            }
+            const extractedMetadata: DicomMetadataResponse = {
+              patientName: dataSet.string("x00100010"),
+              patientID: dataSet.string("x00100020"),
+              patientAge: dataSet.string("x00101010"),
+              studyDescription: dataSet.string("x00081030"),
+              seriesDescription: dataSet.string("x0008103E"),
+              modality: dataSet.string("x00080060"),
+              studyDate: dataSet.string("x00080020"),
+              gender: dataSet.string("x00100040"),
+              birthday: dataSet.string("x00100030"),
+              institution: dataSet.string("x00080080"),
+            };
+
+            await supabase.from("dicom").insert([
+              {
+                user_id: userId,
+                patient_name: extractedMetadata.patientName,
+                patient_id: extractedMetadata.patientID,
+                patient_age: extractedMetadata.patientAge,
+                study_description: extractedMetadata.studyDescription,
+                series_description: extractedMetadata.seriesDescription,
+                modality: extractedMetadata.modality,
+                study_date: extractedMetadata.studyDate,
+                gender: extractedMetadata.gender,
+                birthday: extractedMetadata.birthday,
+                institution: extractedMetadata.institution,
+              },
+            ]);
+          } else {
+            fileErrors.push("No .dicm files found. Let's try again");
           }
-
-          if (!dcmFile) return;
-
-          const firstFile = dcmFile as File;
-          const entry_file_data = await firstFile.arrayBuffer();
-          const byteArray: Uint8Array = new Uint8Array(entry_file_data);
-          const dataSet: DicomDataSet = dicomParser.parseDicom(byteArray);
-
-          const extractedMetadata: DicomMetadataResponse = {
-            patientName: dataSet.string("x00100010"),
-            patientID: dataSet.string("x00100020"),
-            patientAge: dataSet.string("x00101010"),
-            studyDescription: dataSet.string("x00081030"),
-            seriesDescription: dataSet.string("x0008103E"),
-            modality: dataSet.string("x00080060"),
-            studyDate: dataSet.string("x00080020"),
-            gender: dataSet.string("x00100040"),
-            birthday: dataSet.string("x00100030"),
-            institution: dataSet.string("x00080080"),
-          };
-
-          await supabase.from("dicom").insert([
-            {
-              user_id: userId,
-              patient_name: extractedMetadata.patientName,
-              patient_id: extractedMetadata.patientID,
-              patient_age: extractedMetadata.patientAge,
-              study_description: extractedMetadata.studyDescription,
-              series_description: extractedMetadata.seriesDescription,
-              modality: extractedMetadata.modality,
-              study_date: extractedMetadata.studyDate,
-              gender: extractedMetadata.gender,
-              birthday: extractedMetadata.birthday,
-              institution: extractedMetadata.institution,
-            },
-          ]);
+        } else {
+          setUploading(false);
+          setFiles([]);
+          fileErrors.push("File not supported, please try again.");
         }
       } catch {
         fileErrors.push(`Reading or loading ${selectedFile.name}`);
@@ -143,15 +160,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     if (fileErrors.length > 0) {
       setError(`Some files failed: ${fileErrors.join("; ")}`);
     } else if (successfulFiles.length > 0) {
-      setMessage(`Successfully processed ${successfulFiles.length} file(s).`); // Or list names: `${successfulFiles.join(", ")}`
+      setMessage(`Successfully processed ${successfulFiles.length} file(s).`);
       setFiles([]);
       if (onUploadSuccess) {
         onUploadSuccess();
       }
     } else {
-      setMessage("No files were successfully processed.");
+      setMessage("Files were successfully processed.");
     }
-
     setUploading(false);
   };
 
@@ -195,13 +211,22 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           isDragActive
             ? "bg-cyan-50 border-cyan-100"
             : "bg-gray-50 border-gray-300"
-        } transition-all  hover:outline-8 outline-cyan-50 duration-300 hover:border-cyan-200 hover:bg-white flex flex-col group items-center justify-center py-20 w-full border  border-dashed rounded-2xl cursor-pointer `}
+        }
+        ${uploading ? "cursor-no-drop" : "cursor-pointer"}
+        transition-all  hover:outline-8 outline-cyan-50 duration-300 hover:border-cyan-200 hover:bg-white flex flex-col group items-center justify-center py-20 w-full border border-dashed rounded-2xl`}
       >
-        <Icon
-          icon="solar:cloud-upload-broken"
-          className="text-gray-700 mb-3 group-hover:text-cyan-400 transition-colors duration-300"
-          fontSize={42}
-        />
+        <div className="w-11 h-11 relative mb-3">
+          <Icon
+            icon="solar:record-broken"
+            className={`${uploading ? "opacity-100" : "opacity-0"} text-gray-500 animate-spin absolute left-0 top-0 group-hover:text-cyan-400 transition-all duration-300`}
+            fontSize={42}
+          />
+          <Icon
+            icon="solar:cloud-upload-broken"
+            className={`${uploading ? "opacity-0" : "opacity-100"} text-gray-700 absolute left-0 top-0 group-hover:text-cyan-400 transition-colors duration-300`}
+            fontSize={42}
+          />
+        </div>
         <h2 className="text-gray-400 text-sm mb-1">.zip, .rar, .tar files</h2>
         <h4 className="font-semibold">Drag and Drop your files here</h4>
         {files.length > 0 ? (
@@ -234,15 +259,23 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           multiple
         />
       </div>
-      {files.length > 0 ? (
+      {files.length > 0 && !message ? (
         <div className="mt-4 flex justify-center">
           <button
             type="button"
-            className="flex gap-4 items-center text-white cursor-pointer font-semibold disabled:border-gray-100 disabled:bg-gray-100 py-3 px-10 bg-cyan-500 hover:bg-cyan-400 transition-colors duration-500 rounded-lg"
+            className="flex gap-4 items-center text-white disabled:cursor-no-drop cursor-pointer font-semibold disabled:border-cyan-400 disabled:bg-cyan-400 py-3 px-10 bg-cyan-500 hover:bg-cyan-400 transition-colors duration-500 rounded-lg"
             disabled={uploading}
             onClick={handleUpload}
           >
-            <Icon icon="solar:upload-minimalistic-linear" fontSize={26} />
+            {uploading ? (
+              <Icon
+                icon="solar:record-broken"
+                fontSize={26}
+                className="animate-spin"
+              />
+            ) : (
+              <Icon icon="solar:upload-minimalistic-linear" fontSize={26} />
+            )}
             <span>
               {uploading
                 ? "Processing..."
@@ -251,7 +284,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           </button>
         </div>
       ) : null}
-
       {error && (
         <p className="w-fit text-sm px-4 py-2 border border-rose-200 flex items-center gap-3 bg-rose-50 rounded-xl mt-3">
           <Icon
@@ -274,11 +306,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           </p>
           <Link
             href="/admin/dicoms"
-            title="Go Dicoms"
+            title="View All"
             className="w-fit text-lg flex items-center gap-4 px-8 py-2 bg-black text-white rounded-full transition-colors duration-700 hover:bg-gray-800 active:bg-gray-900"
           >
-            <Icon icon="solar:bones-broken" fontSize={24}></Icon>
-            <span>Go Dicoms</span>
+            <Icon icon="solar:file-text-linear" fontSize={24}></Icon>
+            <span>View All</span>
             <Icon icon="solar:arrow-right-broken" fontSize={24}></Icon>
           </Link>
         </div>
