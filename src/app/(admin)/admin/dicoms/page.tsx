@@ -1,17 +1,9 @@
 import DicomsTable from "@/components/DicomsTable";
-import { supabase } from "@/lib/supabase";
-import { DicomType } from "@/types/dicomType";
+import Pagination from "@/components/Pagination";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Link from "next/link";
 
 export default async function Page() {
-  const { data: dicoms } = (await supabase
-    .from("dicom")
-    .select("*, user(id, image_url, first_name, last_name)")
-    .order("created_at", { ascending: false })) as { data: DicomType[] | null };
-
-  if (!dicoms) return null;
-
   return (
     <>
       <div className="flex mb-4 print:hidden items-center justify-between">
@@ -33,7 +25,7 @@ export default async function Page() {
           <Icon icon="solar:backspace-line-duotone" fontSize={36} />
         </Link>
       </div>
-      <DicomsTable dicoms={dicoms} />
+      <Pagination tableName="dicom" />
     </>
   );
 }

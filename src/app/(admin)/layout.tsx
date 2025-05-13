@@ -32,7 +32,7 @@ export default async function AdminLayout({
             ) : null}
             <section
               style={{ minHeight: "calc(100vh - 73px)" }}
-              className="bg-slate-50 flex-grow relative px-4 md:px-7 lg:px-10 py-12 lg:border-l lg:border-gray-200"
+              className="bg-slate-50 flex-grow w-[99%] relative px-4 md:px-7 lg:px-10 py-12 lg:border-l lg:border-gray-200"
             >
               {children}
             </section>
