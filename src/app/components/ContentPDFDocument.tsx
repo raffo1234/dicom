@@ -31,6 +31,7 @@ const styles = StyleSheet.create({
   textSmall: {
     fontSize: 11,
     color: "#99a1af",
+    width: "65pt",
   },
   textPatient: {
     fontSize: 11,
@@ -46,7 +47,24 @@ const styles = StyleSheet.create({
     padding: 60,
   },
   htmlContent: {
-    fontFamily: "Helvetica",
+    fontFamily: "Arial",
+  },
+  table: {
+    fontSize: 11,
+    display: "flex",
+    flexDirection: "column",
+  },
+  row: {
+    display: "flex",
+    flexDirection: "row",
+    flexGrow: 0,
+    flexShrink: 0,
+    lineHeight: 1,
+  },
+  cell: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: "auto",
   },
 });
 
@@ -75,28 +93,40 @@ export default function ContentPDFDocument({
             style={{ marginBottom: 24 }}
             src={activeTemplate?.header_image_url}
           />
-          <View style={{ marginBottom: 24 }}>
-            <Text style={styles.textPatient}>
-              <Text style={styles.textSmall}>Paciente: </Text>
-              {dicom?.patient_name}
-            </Text>
-            <Text style={styles.textPatient}>
-              <Text style={styles.textSmall}>Edad: </Text>{" "}
-              {dicom?.patient_age
-                ? `${extractAgeWidthUnit(dicom?.patient_age).value} ${extractAgeWidthUnit(dicom?.patient_age).unit}`
-                : null}
-            </Text>
-            <Text style={styles.textPatient}>
-              <Text style={styles.textSmall}>ID: </Text> {dicom?.patient_id}
-            </Text>
-            <Text style={styles.textPatient}>
-              <Text style={styles.textSmall}>Fecha: </Text>{" "}
-              {dicom?.study_date ? formatDateYYYYMMDD(dicom?.study_date) : null}
-            </Text>
-            <Text style={styles.textPatient}>
-              <Text style={styles.textSmall}>Descripción: </Text>
-              {dicom?.study_description}
-            </Text>
+          <View style={{ marginBottom: 24, display: "flex" }}>
+            <View style={styles.table}>
+              <View style={[styles.row]}>
+                <Text style={[styles.cell, { width: 300 }]}>
+                  <Text style={styles.textSmall}>Paciente: </Text>
+                  {dicom?.patient_name}
+                </Text>
+                <Text style={[styles.cell]}>
+                  <Text style={[styles.textSmall]}>Edad: </Text>
+                  {dicom?.patient_age
+                    ? `${extractAgeWidthUnit(dicom?.patient_age).value} ${extractAgeWidthUnit(dicom?.patient_age).unit}`
+                    : null}
+                </Text>
+              </View>
+              <View style={[styles.row]}>
+                <Text style={[styles.cell, { width: 300 }]}>
+                  <Text style={styles.textSmall}>Fecha: </Text>{" "}
+                  {dicom?.study_date
+                    ? formatDateYYYYMMDD(dicom?.study_date)
+                    : null}
+                </Text>
+                <Text style={[styles.cell]}>
+                  <Text style={styles.textSmall}>Modalidad: </Text>
+                  {dicom?.modality}
+                </Text>
+              </View>
+              <View style={[styles.row]}>
+                <Text style={[styles.cell]}>
+                  <Text style={styles.textSmall}>Descripción: </Text>
+                  {dicom?.study_description}
+                </Text>
+                <Text style={[styles.cell]}></Text>
+              </View>
+            </View>
           </View>
           {lines.map((line, index) => {
             return (

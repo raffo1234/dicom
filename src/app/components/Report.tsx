@@ -220,26 +220,44 @@ export default function Report({
             />
           ) : null}
           <div className="page">
-            <div className="mb-6" style={{ fontSize: "11pt", lineHeight: 1.6 }}>
+            <div
+              className="mb-6 flex items-start justify-between"
+              style={{ fontSize: "11pt", lineHeight: 1.6 }}
+            >
               <div>
-                <span className="text-gray-400">Paciente:</span>{" "}
-                {dicom?.patient_name}{" "}
+                <div>
+                  <span className="text-gray-400 w-[65pt] inline-block">
+                    Paciente:
+                  </span>{" "}
+                  {dicom?.patient_name}{" "}
+                </div>
+                <div>
+                  <span className="text-gray-400 w-[65pt] inline-block">
+                    Fecha:
+                  </span>{" "}
+                  {formatDateYYYYMMDD(dicom?.study_date)}
+                </div>
+                <div>
+                  <span className="text-gray-400 w-[65pt] inline-block">
+                    Descripción:
+                  </span>{" "}
+                  {dicom?.study_description}
+                </div>
               </div>
-              <div>
-                <span className="text-gray-400">Edad:</span>{" "}
-                {extractAgeWidthUnit(dicom?.patient_age).value}{" "}
-                {extractAgeWidthUnit(dicom?.patient_age).unit}
-              </div>
-              <div>
-                <span className="text-gray-400">ID:</span> {dicom?.patient_id}
-              </div>
-              <div>
-                <span className="text-gray-400">Fecha:</span>{" "}
-                {formatDateYYYYMMDD(dicom?.study_date)}
-              </div>
-              <div>
-                <span className="text-gray-400">Descripción:</span>{" "}
-                {dicom?.study_description}
+              <div className="flex-shrink-0">
+                <div>
+                  <span className="text-gray-400 w-[65pt] inline-block">
+                    Edad:
+                  </span>
+                  {extractAgeWidthUnit(dicom?.patient_age).value}{" "}
+                  {extractAgeWidthUnit(dicom?.patient_age).unit}
+                </div>
+                <div>
+                  <span className="text-gray-400 w-[65pt] inline-block">
+                    Modalidad:
+                  </span>
+                  {dicom?.modality}
+                </div>
               </div>
             </div>
             <TextareaAutosize
