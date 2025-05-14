@@ -40,7 +40,7 @@ const fetcher = async (
     throw error;
   }
 
-  console.log(
+  console.info(
     `SWR Successfully fetched ${data?.length || 0} items for page ${page}.`
   );
   return data as DicomType[] | null;
