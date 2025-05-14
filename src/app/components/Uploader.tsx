@@ -338,7 +338,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       "application/x-lz4": [".lz4"],
       "application/zstd": [".zst"],
     },
-    maxSize: 200 * 1024 * 1024, // 200MB
   });
 
   return (
