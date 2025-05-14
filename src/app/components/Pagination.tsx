@@ -200,7 +200,7 @@ export default function Pagination({ tableName }: { tableName: "dicom" }) {
                       ${state === DicomStateEnum.VIEWED ? "bg-yellow-100" : ""}
                       ${state === DicomStateEnum.DRAFT ? "bg-orange-100" : ""}
                       ${state === DicomStateEnum.COMPLETED ? "bg-cyan-100" : ""}
-                      ${index % 2 === 0 ? "bg-gray-50" : ""} ${index === 0 ? " " : "border-t border-gray-200"}`}
+                      ${index % 2 === 0 && !state ? "bg-gray-50" : ""} ${index === 0 ? " " : "border-t border-gray-200"}`}
                     >
                       <td className="whitespace-nowrap py-5 px-3">
                         {startItemNumber + index}
@@ -240,25 +240,29 @@ export default function Pagination({ tableName }: { tableName: "dicom" }) {
                       <td className="py-5 px-2">{modality}</td>
                       <td className="py-2 px-2">
                         <div className="flex gap-3 justify-end">
-                          <Link
-                            href={`/admin/dicoms/${id}`}
-                            title="Inform"
-                            className="py-2 px-6 flex gap-3 items-center font-semibold border bg-cyan-500 text-white rounded-full cursor-pointer"
-                          >
-                            <Icon
-                              icon="solar:document-add-linear"
-                              fontSize={24}
-                            />
-                            <span>Inform</span>
-                          </Link>
+                          {state !== DicomStateEnum.COMPLETED ? (
+                            <Link
+                              href={`/admin/dicoms/${id}`}
+                              title="Inform"
+                              className="py-2 px-6 flex gap-3 items-center font-semibold border bg-cyan-500 text-white rounded-full cursor-pointer"
+                            >
+                              <Icon
+                                icon="solar:document-add-linear"
+                                fontSize={24}
+                              />
+                              <span>Inform</span>
+                            </Link>
+                          ) : null}
                           <Link
                             target="_blank"
                             href={`/admin/dicoms/preview/${id}`}
                             title="PDF Preview"
                             className="py-2 px-6 flex gap-3 items-center font-semibold  bg-gray-200  rounded-full cursor-pointer"
                           >
-                            <Icon icon="solar:eye-linear" fontSize={24} />
-                            <span>Preview</span>
+                            <Icon
+                              icon="solar:file-smile-outline"
+                              fontSize={24}
+                            />
                           </Link>
                         </div>
                       </td>
