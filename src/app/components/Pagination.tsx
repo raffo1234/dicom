@@ -15,19 +15,20 @@ import TableSkeleton from "./FormSkeleton";
 
 type SortDirection = "asc" | "desc" | null;
 
-const fetcherTotal = async () => {
+const fetcherTotal = async (userId: string) => {
   const { count, error } = await supabase
     .from("dicom")
-    .select("id", { count: "exact", head: false });
+    .select("id", { count: "exact", head: false })
+    .eq("user_id", userId);
 
   if (error) throw error;
   return count;
 };
 
 const fetcher = async (
-  key: [string, number, number, string | null, SortDirection]
+  key: [string, number, number, string | null, SortDirection, string]
 ): Promise<DicomType[] | null> => {
-  const [tableName, page, pageSize, sortColumn, sortDirection] = key;
+  const [tableName, page, pageSize, sortColumn, sortDirection, userId] = key;
 
   const start = (page - 1) * pageSize;
   const end = start + pageSize - 1;
@@ -35,6 +36,7 @@ const fetcher = async (
   let query = supabase
     .from(tableName)
     .select("*, user(id, image_url, first_name, last_name)")
+    .eq("user_id", userId)
     .range(start, end);
 
   if (sortColumn && sortDirection) {
@@ -53,18 +55,24 @@ const fetcher = async (
   return data as DicomType[] | null;
 };
 
-export default function Pagination({ tableName }: { tableName: "dicom" }) {
+export default function Pagination({
+  tableName,
+  userId,
+}: {
+  tableName: "dicom";
+  userId: string;
+}) {
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(8);
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
   const { data, error, isLoading } = useSWR<DicomType[] | null>(
-    [tableName, page, pageSize, sortColumn, sortDirection],
+    [tableName, page, pageSize, sortColumn, sortDirection, userId],
     fetcher
   );
 
-  const { data: count } = useSWR("dicom-total", fetcherTotal);
+  const { data: count } = useSWR("dicom-total", () => fetcherTotal(userId));
 
   const hasMore: boolean =
     data !== undefined && data !== null && data.length === pageSize;
