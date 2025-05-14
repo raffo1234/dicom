@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 import TableSkeleton from "./FormSkeleton";
+import DOCXPreview from "./DOCXPreview";
 
 type SortDirection = "asc" | "desc" | null;
 
@@ -35,7 +36,9 @@ const fetcher = async (
 
   let query = supabase
     .from(tableName)
-    .select("*, user(id, image_url, first_name, last_name)")
+    .select(
+      "*, user(id, image_url, first_name, last_name), template(header_image_url, footer_image_url, sign_image_url)"
+    )
     .eq("user_id", userId)
     .range(start, end);
 
@@ -323,24 +326,11 @@ export default function Pagination({
                             target="_blank"
                             href={`/admin/dicoms/preview/pdf/${id}`}
                             title="PDF Preview"
-                            className="py-2 px-6 flex gap-3 items-center font-semibold bg-rose-400 text-white rounded-full cursor-pointer"
+                            className="py-2 text-xs px-6 flex gap-3 items-center font-semibold bg-rose-400 text-white rounded-full cursor-pointer"
                           >
-                            <Icon
-                              icon="solar:file-smile-outline"
-                              fontSize={24}
-                            />
+                            PDF
                           </Link>
-                          <Link
-                            target="_blank"
-                            href={`/admin/dicoms/preview/docx/${id}`}
-                            title="DOCX Preview"
-                            className="py-2 px-6 flex gap-3 items-center font-semibold  bg-blue-400 text-white rounded-full cursor-pointer"
-                          >
-                            <Icon
-                              icon="solar:file-smile-outline"
-                              fontSize={24}
-                            />
-                          </Link>
+                          <DOCXPreview dicom={data[index]} />
                         </div>
                       </td>
                     </tr>
