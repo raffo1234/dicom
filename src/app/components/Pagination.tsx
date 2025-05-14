@@ -40,9 +40,6 @@ const fetcher = async (
     throw error;
   }
 
-  console.info(
-    `SWR Successfully fetched ${data?.length || 0} items for page ${page}.`
-  );
   return data as DicomType[] | null;
 };
 
@@ -84,7 +81,7 @@ export default function Pagination({ tableName }: { tableName: "dicom" }) {
       setSortColumn(column);
       setSortDirection("asc");
     }
-    // Reset to the first page when sorting changes
+
     setPage(1);
   };
 
@@ -111,19 +108,19 @@ export default function Pagination({ tableName }: { tableName: "dicom" }) {
       )}
 
       {!isLoading && !error && data && data.length > 0 && (
-        <div className="bg-white shadow rounded-xl">
-          <table className="text-sm block whitespace-nowrap overflow-y-auto">
+        <div className="bg-white shadow rounded-xl overflow-auto">
+          <table className="text-sm w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left uppercase text-xs font-semibold py-4 pl-4">
+                <th className="text-left uppercase text-xs font-semibold py-4 px-3">
                   #
                 </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 pl-4">
+                <th className="text-left uppercase text-xs font-semibold py-4 px-2">
                   Patient ID
                 </th>
                 <th
                   onClick={() => handleSort("institution")}
-                  className="text-left uppercase text-xs font-semibold py-4 pl-4 cursor-pointer"
+                  className="text-left uppercase text-xs font-semibold py-4 px-2 cursor-pointer"
                 >
                   Institution Name
                   {sortColumn === "institution" && sortDirection && (
@@ -133,14 +130,14 @@ export default function Pagination({ tableName }: { tableName: "dicom" }) {
                           ? "solar:arrow-up-outline"
                           : "solar:arrow-down-outline"
                       }
-                      className="inline-block ml-1"
+                      className="inline-block"
                       fontSize={12}
                     />
                   )}
                 </th>
                 <th
                   onClick={() => handleSort("patient_name")}
-                  className="text-left uppercase text-xs font-semibold py-4 pl-4 cursor-pointer"
+                  className="text-left uppercase text-xs font-semibold py-4 px-2 cursor-pointer"
                 >
                   Patient Name
                   {sortColumn === "patient_name" && sortDirection && (
@@ -155,26 +152,23 @@ export default function Pagination({ tableName }: { tableName: "dicom" }) {
                     />
                   )}
                 </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 pl-4">
-                  Patient Sex
+                <th className="text-left uppercase text-xs font-semibold py-4 px-2">
+                  Sex
                 </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 pl-4">
+                <th className="text-left uppercase text-xs font-semibold py-4 px-2">
                   Age
                 </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 pl-4">
-                  Birth Date
-                </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 pl-4">
+                <th className="text-left uppercase text-xs font-semibold py-4 px-2">
                   Study Description
                 </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 pl-4">
+                <th className="text-left uppercase text-xs font-semibold py-4 px-2">
                   Study Date
                 </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 pl-4">
+                <th className="text-left uppercase text-xs font-semibold py-4 px-2">
                   Receipt Date
                 </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 pl-4">
-                  Modality
+                <th className="text-left uppercase text-xs font-semibold py-4 px-2">
+                  M
                 </th>
                 <th></th>
               </tr>
@@ -193,7 +187,6 @@ export default function Pagination({ tableName }: { tableName: "dicom" }) {
                     created_at,
                     state,
                     gender,
-                    birthday,
                     institution,
                   },
                   index
@@ -209,34 +202,32 @@ export default function Pagination({ tableName }: { tableName: "dicom" }) {
                       ${state === DicomStateEnum.COMPLETED ? "bg-cyan-100" : ""}
                       ${index % 2 === 0 ? "bg-gray-50" : ""} ${index === 0 ? " " : "border-t border-gray-200"}`}
                     >
-                      <td className="whitespace-nowrap p-5">
+                      <td className="whitespace-nowrap py-5 px-3">
                         {startItemNumber + index}
                       </td>
-                      <td>
-                        <Link
-                          href={`/admin/dicoms/${id}`}
-                          className="p-5 text-sm"
-                        >
+                      <td className="py-5 px-2">
+                        <Link href={`/admin/dicoms/${id}`} className="text-sm">
                           {patient_id}
                         </Link>
                       </td>
-                      <td className="whitespace-nowrap p-5">{institution}</td>
-                      <td className="whitespace-nowrap p-5">{patient_name}</td>
-                      <td className="p-5">{gender}</td>
-                      <td className="whitespace-nowrap p-5">
+                      <td className="whitespace-nowrap py-5 px-2">
+                        {institution}
+                      </td>
+                      <td className="whitespace-nowrap py-5 px-2">
+                        {patient_name}
+                      </td>
+                      <td className="py-5 px-2">{gender}</td>
+                      <td className="whitespace-nowrap py-5 px-2">
                         {extractAgeWidthUnit(patient_age).value}{" "}
                         {extractAgeWidthUnit(patient_age).unit}
                       </td>
-                      <td className="whitespace-nowrap p-5">
-                        {formatDateYYYYMMDD(birthday)}
-                      </td>
-                      <td className="whitespace-nowrap p-5">
+                      <td className="whitespace-nowrap py-5 px-2">
                         {study_description}
                       </td>
-                      <td className="whitespace-nowrap p-5">
+                      <td className="whitespace-nowrap py-5 px-2">
                         {formatDateYYYYMMDD(study_date)}
                       </td>
-                      <td className="whitespace-nowrap p-5">
+                      <td className="whitespace-nowrap py-5 px-2">
                         {formatInTimeZone(
                           createdAt,
                           "America/Lima",
@@ -246,9 +237,9 @@ export default function Pagination({ tableName }: { tableName: "dicom" }) {
                           }
                         )}
                       </td>
-                      <td className="p-5">{modality}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex gap-3">
+                      <td className="py-5 px-2">{modality}</td>
+                      <td className="py-2 px-2">
+                        <div className="flex gap-3 justify-end">
                           <Link
                             href={`/admin/dicoms/${id}`}
                             title="Inform"
