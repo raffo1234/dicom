@@ -305,7 +305,7 @@ export default function Pagination({
                       </td>
                       <td className="py-5 px-2">{modality}</td>
                       <td className="py-2 px-2">
-                        <div className="flex gap-3 justify-end">
+                        <div className="flex gap-1 justify-end">
                           {state !== DicomStateEnum.COMPLETED ? (
                             <Link
                               href={`/admin/dicoms/${id}`}
@@ -321,9 +321,20 @@ export default function Pagination({
                           ) : null}
                           <Link
                             target="_blank"
-                            href={`/admin/dicoms/preview/${id}`}
+                            href={`/admin/dicoms/preview/pdf/${id}`}
                             title="PDF Preview"
-                            className="py-2 px-6 flex gap-3 items-center font-semibold  bg-gray-200  rounded-full cursor-pointer"
+                            className="py-2 px-6 flex gap-3 items-center font-semibold bg-rose-400 text-white rounded-full cursor-pointer"
+                          >
+                            <Icon
+                              icon="solar:file-smile-outline"
+                              fontSize={24}
+                            />
+                          </Link>
+                          <Link
+                            target="_blank"
+                            href={`/admin/dicoms/preview/docx/${id}`}
+                            title="DOCX Preview"
+                            className="py-2 px-6 flex gap-3 items-center font-semibold  bg-blue-400 text-white rounded-full cursor-pointer"
                           >
                             <Icon
                               icon="solar:file-smile-outline"
