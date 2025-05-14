@@ -10,7 +10,7 @@ export default async function Page() {
           <Link
             href="/admin/dicom"
             title="Upload Dicoms"
-            className="px-6 text-white  py-2 rounded-full bg-cyan-500 flex gap-2 items-center"
+            className="px-6 text-white  py-2 rounded-full bg-black flex gap-2 items-center"
           >
             <span>Upload</span>
             <Icon icon="solar:add-circle-linear" fontSize={24}></Icon>
