@@ -203,7 +203,7 @@ export default function Report({
           </Link>
         </div>
       </div>
-      <div className="bg-gray-200">
+      <div className="bg-gray-200 overflow-auto">
         <div
           style={{ width: "595pt", fontFamily: "Arial" }}
           className="p-[60pt] pb-[120pt] relative mx-auto bg-white overflow-hidden"
