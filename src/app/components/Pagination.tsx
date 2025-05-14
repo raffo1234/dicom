@@ -11,8 +11,18 @@ import { es } from "date-fns/locale";
 import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
+import TableSkeleton from "./FormSkeleton";
 
 type SortDirection = "asc" | "desc" | null;
+
+const fetcherTotal = async () => {
+  const { count, error } = await supabase
+    .from("dicom")
+    .select("id", { count: "exact", head: false });
+
+  if (error) throw error;
+  return count;
+};
 
 const fetcher = async (
   key: [string, number, number, string | null, SortDirection]
@@ -43,10 +53,9 @@ const fetcher = async (
   return data as DicomType[] | null;
 };
 
-const pageSize: number = 8;
-
 export default function Pagination({ tableName }: { tableName: "dicom" }) {
   const [page, setPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(8);
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
@@ -55,8 +64,29 @@ export default function Pagination({ tableName }: { tableName: "dicom" }) {
     fetcher
   );
 
+  const { data: count } = useSWR("dicom-total", fetcherTotal);
+
   const hasMore: boolean =
     data !== undefined && data !== null && data.length === pageSize;
+
+  const handlePageSize = (formData: FormData) => {
+    const pageSizeValue: FormDataEntryValue | null = formData.get("pageSize");
+
+    if (typeof pageSizeValue === "string") {
+      const newPageSize = parseInt(pageSizeValue, 10);
+
+      if (!isNaN(newPageSize) && newPageSize > 0) {
+        setPageSize(newPageSize);
+        setPage(1);
+      } else {
+        console.warn("Invalid page size value received:", pageSizeValue);
+      }
+    } else {
+      console.warn(
+        "Page size value not found in form data or is not a string."
+      );
+    }
+  };
 
   const handlePreviousPage = () => {
     if (page > 1) {
@@ -89,12 +119,40 @@ export default function Pagination({ tableName }: { tableName: "dicom" }) {
 
   return (
     <>
-      {isLoading && (
-        <div className="flex items-center justify-center gap-2 text-gray-600">
-          <Icon icon="svg-spinners:ring-resize" fontSize={20} />
-          Loading data...
+      <div className="flex mb-4 items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/dicom"
+            title="Upload Dicoms"
+            className="px-6 text-white py-2 rounded-full bg-black flex gap-2 items-center"
+          >
+            <span>Upload</span>
+            <Icon icon="solar:add-circle-linear" fontSize={24}></Icon>
+          </Link>
+          <input
+            type="search"
+            className="bg-white rounded-full border border-gray-200 outline-0 py-2 px-5"
+          />
         </div>
-      )}
+      </div>
+      <div className="flex justify-end mb-4">
+        <div className="text-xs flex items-center gap-1">
+          <span>
+            Total: <span className="text-base font-semibold">{count}</span>,
+          </span>
+          <form action={handlePageSize} className="inline-block">
+            <input
+              type="text"
+              name="pageSize"
+              className="py-1 px-3 rounded-full text-center text-base transition-colors duration-300 hover:border-gray-300 focus:border-cyan-400 outline-0 border border-gray-200 w-16"
+              defaultValue={pageSize}
+            />
+          </form>
+          <span>per page</span>
+        </div>
+      </div>
+
+      {isLoading && <TableSkeleton rows={pageSize} cols={7} />}
 
       {error && (
         <p className="text-sm px-4 py-2 border border-rose-200 flex items-center gap-3 bg-rose-50 rounded-xl text-rose-700">
@@ -282,7 +340,7 @@ export default function Pagination({ tableName }: { tableName: "dicom" }) {
       <div className="flex justify-between items-center mt-4">
         <button
           onClick={handlePreviousPage}
-          disabled={page === 1 || isLoading} // Disable if on the first page or loading
+          disabled={page === 1 || isLoading}
           className="flex cursor-pointer items-center gap-1 px-4 py-2 border border-transparent text-sm rounded-full  text-white bg-cyan-500 hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-300"
         >
           <Icon icon="solar:arrow-left-outline" fontSize={16} />

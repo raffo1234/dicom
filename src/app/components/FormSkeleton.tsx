@@ -1,17 +1,23 @@
-export default function TableSkeleton({ rows = 1 }) {
+export default function TableSkeleton({ rows = 1, cols = 1 }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-1">
+      <div className="animate-pulse flex gap-1">
+        <div className="bg-gray-100 rounded-lg h-10 w-10"></div>
+        {[...Array(cols)].map((_, i) => (
+          <div key={i} className="bg-gray-100 rounded-lg h-10 flex-grow"></div>
+        ))}
+      </div>
       {[...Array(rows)].map((_, i) => (
-        <div key={i} className="w-full 
-        pulse">
-          <div className="bg-gray-200 mb-2 w-1/3 rounded-lg h-6 flex-grow"></div>
-          <div className="bg-gray-100 rounded-lg h-12 flex-grow"></div>
+        <div key={i} className="w-full flex items-center gap-1 pulse">
+          <div className="bg-gray-200 rounded-lg h-12 w-10"></div>
+          {[...Array(cols)].map((_, i) => (
+            <div
+              key={i}
+              className="bg-gray-200 rounded-lg h-12 flex-grow"
+            ></div>
+          ))}
         </div>
       ))}
-      <div className="mt-4 animate-pulse w-1/3 flex gap-4">
-        <div className="bg-gray-100 rounded-lg h-12 flex-grow"></div>
-        <div className="bg-gray-100 rounded-lg h-12 flex-grow"></div>
-      </div>
     </div>
   );
 }
