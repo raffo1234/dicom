@@ -145,9 +145,9 @@ export default function Report({
 
   return (
     <>
-      <div className="flex mb-6 items-center">
+      <div className="sm:flex mb-6 items-center">
         <div
-          className="grid gap-2 flex-grow-1"
+          className="grid gap-2 mb-4 sm:mb-0 flex-grow-1"
           style={{
             gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
           }}
@@ -199,7 +199,6 @@ export default function Report({
             className="py-2 px-6 flex gap-3 items-center font-semibold  border bg-cyan-500 text-white rounded-full cursor-pointer"
           >
             <Icon icon="solar:eye-linear" fontSize={24} />
-            <span>Preview</span>
           </Link>
         </div>
       </div>

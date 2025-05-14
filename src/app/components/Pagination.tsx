@@ -129,10 +129,10 @@ export default function Pagination({ tableName }: { tableName: "dicom" }) {
             <span>Upload</span>
             <Icon icon="solar:add-circle-linear" fontSize={24}></Icon>
           </Link>
-          <input
+          {/* <input
             type="search"
             className="bg-white rounded-full border border-gray-200 outline-0 py-2 px-5"
-          />
+          /> */}
         </div>
       </div>
       <div className="flex justify-end mb-4">
