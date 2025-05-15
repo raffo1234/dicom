@@ -15,26 +15,8 @@ import formatDateYYYYMMDD from "@/lib/formatDateYYYYMMDD";
 import { DicomStateEnum } from "@/enums/dicomStateEnum";
 import { supabase } from "@/lib/supabase";
 import ContentPDFDocument from "@/components/ContentPDFDocument";
-import DOCXPreview from "./DOCXPreview";
-
-function GeneratePDFButton({
-  label,
-  isDisabled = false,
-}: {
-  label: string;
-  isDisabled?: boolean;
-}) {
-  return (
-    <button
-      disabled={isDisabled}
-      type="button"
-      className="flex gap-1 items-center text-white cursor-pointer font-semibold disabled:opacity-90 py-2 px-6 text-xs bg-rose-400 hover:bg-cyan-400 transition-colors duration-500 rounded-full"
-    >
-      <Icon icon="solar:download-minimalistic-bold" fontSize={16}></Icon>
-      <span>{label}</span>
-    </button>
-  );
-}
+import DOCXPreview from "@/components/DOCXPreview";
+import GeneratePDFButton from "@/components/GeneratePDFButton";
 
 export default function Report({
   templates,
@@ -204,6 +186,7 @@ export default function Report({
               {dicomState}
             </div>
           ) : null}
+
           {PDFDownloadLink ? (
             <PDFDownloadLink
               document={

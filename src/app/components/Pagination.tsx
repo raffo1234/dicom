@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { DicomStateEnum } from "@/enums/dicomStateEnum";
 import extractAgeWidthUnit from "@/lib/extractAgeWithUnit";
 import formatDateYYYYMMDD from "@/lib/formatDateYYYYMMDD";
@@ -9,9 +10,12 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { formatInTimeZone } from "date-fns-tz";
 import { es } from "date-fns/locale";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import useSWR from "swr";
-import TableSkeleton from "./FormSkeleton";
+import TableSkeleton from "@/components/FormSkeleton";
+import GeneratePDFButton from "@/components/GeneratePDFButton";
+import ContentPDFDocument from "./ContentPDFDocument";
+import DOCXPreview from "./DOCXPreview";
 
 type SortDirection = "asc" | "desc" | null;
 
@@ -64,6 +68,18 @@ export default function Pagination({
   tableName: "dicom";
   userId: string;
 }) {
+  const PDFDownloadLink = useMemo(
+    () =>
+      dynamic(
+        () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
+        {
+          ssr: false,
+          loading: () => <GeneratePDFButton isDisabled={true} label="PDF" />,
+        }
+      ),
+    []
+  );
+  const nowMs = Date.now();
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(8);
   const [sortColumn, setSortColumn] = useState<string | null>(null);
@@ -310,6 +326,34 @@ export default function Pagination({
                       <td className="py-5 px-2">{modality}</td>
                       <td className="py-2 px-2">
                         <div className="flex gap-1 justify-end">
+                          {state === DicomStateEnum.COMPLETED ? (
+                            <>
+                              {PDFDownloadLink ? (
+                                <PDFDownloadLink
+                                  document={
+                                    <ContentPDFDocument
+                                      dicom={data[index]}
+                                      activeTemplate={data[index].template}
+                                      content={data[index].report}
+                                    />
+                                  }
+                                  fileName={`${data[index]?.patient_name}_${nowMs}_${userId}.pdf`}
+                                >
+                                  {({ loading }) =>
+                                    loading ? (
+                                      <GeneratePDFButton
+                                        label="PDF"
+                                        isDisabled={true}
+                                      />
+                                    ) : (
+                                      <GeneratePDFButton label="PDF" />
+                                    )
+                                  }
+                                </PDFDownloadLink>
+                              ) : null}
+                              <DOCXPreview dicom={data[index]} />
+                            </>
+                          ) : null}
                           <Link
                             href={`/admin/dicoms/${id}`}
                             title="Inform"
@@ -328,15 +372,6 @@ export default function Pagination({
                                 ? "Inform"
                                 : "Amend"}
                             </span>
-                          </Link>
-                          <Link
-                            target="_blank"
-                            href={`/admin/dicoms/preview/pdf/${id}`}
-                            title="PDF Preview"
-                            className="py-2 text-xs px-6 flex gap-3 items-center font-semibold bg-rose-400 text-white rounded-full cursor-pointer"
-                          >
-                            <Icon icon="solar:eye-linear" fontSize={24}></Icon>
-                            <span>PDF</span>
                           </Link>
                         </div>
                       </td>
