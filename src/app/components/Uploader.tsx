@@ -62,7 +62,18 @@ interface ExtractedFilesObject {
 }
 
 async function insertDataSetToDb(userId: string, dataSet: DicomMetadata) {
-  await supabase.from("dicom").insert([
+  const table = "dicom";
+  const { count } = await supabase
+    .from(table)
+    .select("id", { count: "exact", head: true })
+    .eq("patient_name", dataSet.patientName)
+    .eq("study_date", dataSet.studyDate);
+
+  if (count && count > 0) {
+    return null;
+  }
+
+  const { data } = await supabase.from(table).insert([
     {
       user_id: userId,
       patient_name: dataSet.patientName,
@@ -76,6 +87,10 @@ async function insertDataSetToDb(userId: string, dataSet: DicomMetadata) {
       institution: dataSet.institutionName,
     },
   ]);
+
+  if (data) {
+    return data;
+  }
 }
 
 interface DicomdirInfo {
@@ -261,7 +276,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 const extractedMetadata: DicomMetadata =
                   extractPatientAndStudyInfo(directoryRecordItems);
 
-                await insertDataSetToDb(userId, extractedMetadata);
+                const data = await insertDataSetToDb(userId, extractedMetadata);
+                if (data) {
+                  setMessage("This record already exists");
+                  return;
+                }
               }
             } else {
               const dcmFileArrayBuffer = await dcmFile.arrayBuffer();
@@ -280,7 +299,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 institutionName: dataSet.string("x00080080"),
               };
 
-              await insertDataSetToDb(userId, extractedMetadata);
+              const data = await insertDataSetToDb(userId, extractedMetadata);
+              if (data) {
+                setMessage("This record already exists");
+                return;
+              }
             }
           } else {
             fileErrors.push("No .dicm files found. Let's try again");
@@ -355,12 +378,16 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         <div className="w-11 h-11 relative mb-3">
           <Icon
             icon="solar:record-broken"
-            className={`${uploading ? "opacity-100" : "opacity-0"} text-gray-500 animate-spin absolute left-0 top-0 group-hover:text-cyan-400 transition-all duration-300`}
+            className={`${
+              uploading ? "opacity-100" : "opacity-0"
+            } text-gray-500 animate-spin absolute left-0 top-0 group-hover:text-cyan-400 transition-all duration-300`}
             fontSize={42}
           />
           <Icon
             icon="solar:cloud-upload-broken"
-            className={`${uploading ? "opacity-0" : "opacity-100"} text-gray-700 absolute left-0 top-0 group-hover:text-cyan-400 transition-colors duration-300`}
+            className={`${
+              uploading ? "opacity-0" : "opacity-100"
+            } text-gray-700 absolute left-0 top-0 group-hover:text-cyan-400 transition-colors duration-300`}
             fontSize={42}
           />
         </div>
