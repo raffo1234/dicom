@@ -261,20 +261,14 @@ export default function Report({
                 </div>
               </div>
             </div>
-            {dicomState === DicomStateEnum.COMPLETED ? (
-              <div className="w-full text-[11pt] leading-[1.6] whitespace-pre">
-                {value}
-              </div>
-            ) : (
-              <TextareaAutosize
-                defaultValue={value}
-                onChange={(event) => debouncedTextarea(event.target.value)}
-                minRows={2}
-                placeholder="Radiologist's report"
-                aria-label="Radiologist's report"
-                className="rounded-sm w-full text-[11pt] leading-[1.6] focus:ring-0 focus:outline-none border border-gray-300 focus:border-cyan-300 min-h-6 border-dotted"
-              />
-            )}
+            <TextareaAutosize
+              defaultValue={value}
+              onChange={(event) => debouncedTextarea(event.target.value)}
+              minRows={2}
+              placeholder="Radiologist's report"
+              aria-label="Radiologist's report"
+              className="rounded-sm w-full text-[11pt] leading-[1.6] focus:ring-0 focus:outline-none border border-gray-300 focus:border-cyan-300 min-h-6 border-dotted"
+            />
             {activeTemplate?.sign_image_url ? (
               <Image
                 src={activeTemplate?.sign_image_url}
