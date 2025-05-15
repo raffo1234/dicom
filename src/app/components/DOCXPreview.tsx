@@ -227,8 +227,9 @@ const DOCXPreview = ({ dicom }: { dicom: DicomType }) => {
       const blob = await Packer.toBlob(doc);
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
+      const now = Date.now();
       link.href = url;
-      link.download = "My Document with URL Image.docx";
+      link.download = `${dicom.patient_name}_${dicom.user_id}_${now}.docx`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

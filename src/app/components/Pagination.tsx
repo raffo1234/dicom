@@ -321,16 +321,19 @@ export default function Pagination({
                               />
                               <span>Inform</span>
                             </Link>
-                          ) : null}
-                          <Link
-                            target="_blank"
-                            href={`/admin/dicoms/preview/pdf/${id}`}
-                            title="PDF Preview"
-                            className="py-2 text-xs px-6 flex gap-3 items-center font-semibold bg-rose-400 text-white rounded-full cursor-pointer"
-                          >
-                            PDF
-                          </Link>
-                          <DOCXPreview dicom={data[index]} />
+                          ) : (
+                            <>
+                              <Link
+                                target="_blank"
+                                href={`/admin/dicoms/preview/pdf/${id}`}
+                                title="PDF Preview"
+                                className="py-2 text-xs px-6 flex gap-3 items-center font-semibold bg-rose-400 text-white rounded-full cursor-pointer"
+                              >
+                                PDF
+                              </Link>
+                              <DOCXPreview dicom={data[index]} />
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

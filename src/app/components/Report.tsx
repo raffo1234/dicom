@@ -14,7 +14,8 @@ import Link from "next/link";
 import formatDateYYYYMMDD from "@/lib/formatDateYYYYMMDD";
 import { DicomStateEnum } from "@/enums/dicomStateEnum";
 import { supabase } from "@/lib/supabase";
-import ContentPDFDocument from "./ContentPDFDocument";
+import ContentPDFDocument from "@/components/ContentPDFDocument";
+import DOCXPreview from "./DOCXPreview";
 
 function GeneratePDFButton({
   label,
@@ -27,8 +28,9 @@ function GeneratePDFButton({
     <button
       disabled={isDisabled}
       type="button"
-      className="flex print:hidden gap-4 items-center text-white cursor-pointer font-semibold disabled:border-gray-100 disabled:opacity-90 py-3 px-10 bg-cyan-500 hover:bg-cyan-400 transition-colors duration-500 rounded-xl"
+      className="flex gap-1 items-center text-white cursor-pointer font-semibold disabled:opacity-90 py-3 px-6 text-sm bg-cyan-500 hover:bg-cyan-400 transition-colors duration-500 rounded-xl"
     >
+      <Icon icon="solar:download-minimalistic-bold" fontSize={24}></Icon>
       <span>{label}</span>
     </button>
   );
@@ -43,6 +45,7 @@ export default function Report({
   userId?: string;
   dicom: DicomType;
 }) {
+  const nowMs = Date.now();
   const [dicomState, setDicomState] = useState("");
   const [value, setValue] = useState("");
   const [activeTemplate, setActiveTemplate] = useState<
@@ -55,9 +58,7 @@ export default function Report({
         () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
         {
           ssr: false,
-          loading: () => (
-            <GeneratePDFButton isDisabled={true} label="Generate PDF" />
-          ),
+          loading: () => <GeneratePDFButton isDisabled={true} label="PDF" />,
         }
       ),
     [value, activeTemplate]
@@ -177,7 +178,7 @@ export default function Report({
             <Icon icon="solar:add-circle-linear" fontSize={32} />
           </Link>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1">
           {dicomState ? (
             <div
               className={`
@@ -193,13 +194,14 @@ export default function Report({
           ) : null}
           <Link
             target="_blank"
-            href={`/admin/dicoms/preview/${dicom.id}`}
+            href={`/admin/dicoms/preview/pdf/${dicom.id}`}
             title="PDF Preview"
             type="button"
-            className="py-2 px-6 flex gap-3 items-center font-semibold  border bg-cyan-500 text-white rounded-full cursor-pointer"
+            className="py-2 text-xs px-6 flex gap-3 items-center font-semibold  border bg-cyan-500 text-white rounded-full cursor-pointer"
           >
-            <Icon icon="solar:eye-linear" fontSize={24} />
+            PDF
           </Link>
+          <DOCXPreview dicom={dicom} />
         </div>
       </div>
       <div className="bg-gray-200 overflow-auto">
@@ -337,34 +339,38 @@ export default function Report({
             Save as {DicomStateEnum.COMPLETED}
           </button>
         ) : null}
-        <Link
-          target="_blank"
-          href={`/admin/dicoms/preview/${dicom.id}`}
-          title="PDF Preview"
-          type="button"
-          className="px-6 py-2 flex items-center text-white border  bg-cyan-500 rounded-xl cursor-pointer"
-        >
-          <Icon icon="solar:eye-linear" fontSize={24} />
-        </Link>
-        {PDFDownloadLink && dicomState === DicomStateEnum.COMPLETED ? (
-          <PDFDownloadLink
-            document={
-              <ContentPDFDocument
-                dicom={dicom}
-                activeTemplate={activeTemplate}
-                content={value}
-              />
-            }
-            fileName={`${dicom?.patient_name}_${userId}.pdf`}
-          >
-            {({ loading }) =>
-              loading ? (
-                <GeneratePDFButton label="Generate PDF" isDisabled={true} />
-              ) : (
-                <GeneratePDFButton label="Generate PDF" />
-              )
-            }
-          </PDFDownloadLink>
+
+        {PDFDownloadLink ? (
+          dicomState === DicomStateEnum.COMPLETED ? (
+            <PDFDownloadLink
+              document={
+                <ContentPDFDocument
+                  dicom={dicom}
+                  activeTemplate={activeTemplate}
+                  content={value}
+                />
+              }
+              fileName={`${dicom?.patient_name}_${nowMs}_${userId}.pdf`}
+            >
+              {({ loading }) =>
+                loading ? (
+                  <GeneratePDFButton label="PDF" isDisabled={true} />
+                ) : (
+                  <GeneratePDFButton label="PDF" />
+                )
+              }
+            </PDFDownloadLink>
+          ) : (
+            <Link
+              target="_blank"
+              href={`/admin/dicoms/preview/pdf/${dicom.id}`}
+              title="PDF Preview"
+              type="button"
+              className="px-6 py-2 flex items-center text-white border  bg-cyan-500 rounded-xl cursor-pointer"
+            >
+              <Icon icon="solar:eye-linear" fontSize={24} />
+            </Link>
+          )
         ) : null}
       </div>
     </>
