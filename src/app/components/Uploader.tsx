@@ -63,33 +63,46 @@ interface ExtractedFilesObject {
 
 async function insertDataSetToDb(userId: string, dataSet: DicomMetadata) {
   const table = "dicom";
-  const { count } = await supabase
+  const { count, error } = await supabase
     .from(table)
     .select("id", { count: "exact", head: true })
     .eq("patient_name", dataSet.patientName)
-    .eq("study_date", dataSet.studyDate);
+    .eq("study_date", dataSet.studyDate)
+    .eq("user_id", userId);
 
-  if (count && count > 0) {
-    return null;
+  if (error) {
+    console.error("Error checking for existing record:", error);
+    return;
   }
 
-  const { data } = await supabase.from(table).insert([
-    {
-      user_id: userId,
-      patient_name: dataSet.patientName,
-      patient_id: dataSet.patientId,
-      patient_age: dataSet.patientAge,
-      study_description: dataSet.studyDescription,
-      modality: dataSet.modality,
-      study_date: dataSet.studyDate,
-      gender: dataSet.patientSex,
-      birthday: dataSet.patientBirthDate,
-      institution: dataSet.institutionName,
-    },
-  ]);
+  if (count === 0) {
+    const { data, error: insertError } = await supabase
+      .from(table)
+      .insert([
+        {
+          user_id: userId,
+          patient_name: dataSet.patientName,
+          patient_id: dataSet.patientId,
+          patient_age: dataSet.patientAge,
+          study_description: dataSet.studyDescription,
+          modality: dataSet.modality,
+          study_date: dataSet.studyDate,
+          gender: dataSet.patientSex,
+          birthday: dataSet.patientBirthDate,
+          institution: dataSet.institutionName,
+        },
+      ])
+      .select()
+      .single();
 
-  if (data) {
+    if (insertError) {
+      console.error("Error inserting record:", insertError);
+      return null;
+    }
+
     return data;
+  } else {
+    return null;
   }
 }
 
@@ -108,7 +121,7 @@ interface DicomdirInfo {
 function extractPatientAndStudyInfo(
   directoryRecordItems: DicomElement[]
 ): DicomdirInfo {
-  const dicomdirInfo: DicomdirInfo = {}; // Initialize as an empty object
+  const dicomdirInfo: DicomdirInfo = {};
 
   let patientFound = false;
   let studyFound = false;
@@ -271,7 +284,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     const fileErrors: string[] = [];
     const successfulFiles: string[] = [];
 
-    Array.from(files).map(async ({ file: selectedFile }, index) => {
+    for (let index = 0; index < files.length; index++) {
+      const selectedFile = files[index].file;
       try {
         const fileName = selectedFile.name;
         const fileExt = fileName.split(".").pop();
@@ -360,7 +374,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       } catch {
         fileErrors.push(`Reading or loading ${selectedFile.name}`);
       }
-    });
+    }
 
     if (fileErrors.length > 0) {
       setError(`Some files failed: ${fileErrors.join("; ")}`);
@@ -378,7 +392,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     Array.from(acceptedFiles).map((file) => {
-      setFiles((prev) => [...prev, { file, message: "Selected" }]);
+      setFiles((prev) => [
+        ...prev,
+        { file, message: "Selected", bgColor: "bg-gray-50" },
+      ]);
     });
 
     setError(null);
@@ -450,7 +467,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 return (
                   <div
                     key={index}
-                    className={`${bgColor} flex text-sm items-center gap-2  px-5 py-2 first:border-0 border-t border-gray-200`}
+                    className={`${bgColor} last:rounded-b-xl flex text-sm items-center gap-2  px-5 py-2 first:border-0 border-t border-gray-200`}
                   >
                     <div key={index} className="truncate">
                       {file.name}
