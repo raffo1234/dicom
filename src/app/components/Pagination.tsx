@@ -12,7 +12,6 @@ import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 import TableSkeleton from "./FormSkeleton";
-import DOCXPreview from "./DOCXPreview";
 
 type SortDirection = "asc" | "desc" | null;
 
@@ -318,7 +317,7 @@ export default function Pagination({
                           >
                             <Icon
                               icon={`${
-                                state !== DicomStateEnum.COMPLETED
+                                state === DicomStateEnum.COMPLETED
                                   ? "solar:file-check-linear"
                                   : "solar:document-add-linear"
                               }`}
@@ -336,9 +335,9 @@ export default function Pagination({
                             title="PDF Preview"
                             className="py-2 text-xs px-6 flex gap-3 items-center font-semibold bg-rose-400 text-white rounded-full cursor-pointer"
                           >
-                            PDF
+                            <Icon icon="solar:eye-linear" fontSize={24}></Icon>
+                            <span>PDF</span>
                           </Link>
-                          <DOCXPreview dicom={data[index]} />
                         </div>
                       </td>
                     </tr>

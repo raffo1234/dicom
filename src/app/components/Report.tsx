@@ -28,9 +28,9 @@ function GeneratePDFButton({
     <button
       disabled={isDisabled}
       type="button"
-      className="flex gap-1 items-center text-white cursor-pointer font-semibold disabled:opacity-90 py-3 px-6 text-sm bg-cyan-500 hover:bg-cyan-400 transition-colors duration-500 rounded-xl"
+      className="flex gap-1 items-center text-white cursor-pointer font-semibold disabled:opacity-90 py-2 px-6 text-xs bg-rose-400 hover:bg-cyan-400 transition-colors duration-500 rounded-full"
     >
-      <Icon icon="solar:download-minimalistic-bold" fontSize={24}></Icon>
+      <Icon icon="solar:download-minimalistic-bold" fontSize={16}></Icon>
       <span>{label}</span>
     </button>
   );
@@ -183,24 +183,47 @@ export default function Report({
             <div
               className={`
               font-semibold uppercase
-              ${dicomState === DicomStateEnum.VIEWED ? "text-yellow-500 border-yellow-300 bg-yellow-50" : ""}  
-              ${dicomState === DicomStateEnum.DRAFT ? "text-orange-500 border-orange-100 bg-orange-50" : ""}  
-              ${dicomState === DicomStateEnum.COMPLETED ? "text-cyan-600 border-cyan-200 bg-cyan-100" : ""}  
+              ${
+                dicomState === DicomStateEnum.VIEWED
+                  ? "text-yellow-500 border-yellow-300 bg-yellow-50"
+                  : ""
+              }  
+              ${
+                dicomState === DicomStateEnum.DRAFT
+                  ? "text-orange-500 border-orange-100 bg-orange-50"
+                  : ""
+              }  
+              ${
+                dicomState === DicomStateEnum.COMPLETED
+                  ? "text-cyan-600 border-cyan-200 bg-cyan-100"
+                  : ""
+              }  
               py-1 px-5 text-sm uppercase rounded-full border`}
               title={dicomState}
             >
               {dicomState}
             </div>
           ) : null}
-          <Link
-            target="_blank"
-            href={`/admin/dicoms/preview/pdf/${dicom.id}`}
-            title="PDF Preview"
-            type="button"
-            className="py-2 text-xs px-6 flex gap-3 items-center font-semibold  border bg-cyan-500 text-white rounded-full cursor-pointer"
-          >
-            PDF
-          </Link>
+          {PDFDownloadLink ? (
+            <PDFDownloadLink
+              document={
+                <ContentPDFDocument
+                  dicom={dicom}
+                  activeTemplate={activeTemplate}
+                  content={value}
+                />
+              }
+              fileName={`${dicom?.patient_name}_${nowMs}_${userId}.pdf`}
+            >
+              {({ loading }) =>
+                loading ? (
+                  <GeneratePDFButton label="PDF" isDisabled={true} />
+                ) : (
+                  <GeneratePDFButton label="PDF" />
+                )
+              }
+            </PDFDownloadLink>
+          ) : null}
           <DOCXPreview dicom={dicom} />
         </div>
       </div>
@@ -333,39 +356,32 @@ export default function Report({
             Save as {DicomStateEnum.COMPLETED}
           </button>
         ) : null}
-
-        {PDFDownloadLink ? (
-          dicomState === DicomStateEnum.COMPLETED ? (
-            <PDFDownloadLink
-              document={
-                <ContentPDFDocument
-                  dicom={dicom}
-                  activeTemplate={activeTemplate}
-                  content={value}
-                />
-              }
-              fileName={`${dicom?.patient_name}_${nowMs}_${userId}.pdf`}
-            >
-              {({ loading }) =>
-                loading ? (
-                  <GeneratePDFButton label="PDF" isDisabled={true} />
-                ) : (
-                  <GeneratePDFButton label="PDF" />
-                )
-              }
-            </PDFDownloadLink>
-          ) : (
-            <Link
-              target="_blank"
-              href={`/admin/dicoms/preview/pdf/${dicom.id}`}
-              title="PDF Preview"
-              type="button"
-              className="px-6 py-2 flex items-center text-white border  bg-cyan-500 rounded-xl cursor-pointer"
-            >
-              <Icon icon="solar:eye-linear" fontSize={24} />
-            </Link>
-          )
+        {dicomState === DicomStateEnum.COMPLETED ? (
+          <button
+            onClick={() =>
+              updateDicomState(
+                dicom.id,
+                DicomStateEnum.COMPLETED,
+                activeTemplate?.id
+              )
+            }
+            title="Amend"
+            type="button"
+            className="px-6 py-2 font-semibold text-cyan-600 border-cyan-200 cursor-pointer border bg-cyan-50 rounded-xl"
+          >
+            Amend
+          </button>
         ) : null}
+        <Link
+          target="_blank"
+          href={`/admin/dicoms/preview/pdf/${dicom.id}`}
+          title="PDF Preview"
+          type="button"
+          className="px-6 py-2 flex gap-3 items-center text-white border bg-rose-400 rounded-xl cursor-pointer"
+        >
+          <Icon icon="solar:eye-linear" fontSize={24} />
+          <span>PDF</span>
+        </Link>
       </div>
     </>
   );

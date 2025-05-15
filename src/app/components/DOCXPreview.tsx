@@ -15,9 +15,9 @@ import {
   BorderStyle,
 } from "docx";
 import { DicomType } from "@/types/dicomType";
+import { Icon } from "@iconify/react/dist/iconify.js";
 
 const DOCXPreview = ({ dicom }: { dicom: DicomType }) => {
-  console.log(dicom);
   const lines = dicom.report?.split("\n") || [];
   const generateDocx = async () => {
     const headerImageUrl = dicom.template?.header_image_url ?? "";
@@ -243,9 +243,10 @@ const DOCXPreview = ({ dicom }: { dicom: DicomType }) => {
     <button
       onClick={generateDocx}
       title="DOCX Preview"
-      className="py-2 text-xs px-6 flex  gap-3 items-center font-semibold  bg-blue-400 text-white rounded-full cursor-pointer"
+      className="py-2 text-xs px-6 flex gap-2 items-center font-semibold  bg-blue-400 text-white rounded-full cursor-pointer"
     >
-      DOC
+      <Icon icon="solar:download-minimalistic-bold" fontSize={16}></Icon>
+      <span>DOC</span>
     </button>
   );
 };
