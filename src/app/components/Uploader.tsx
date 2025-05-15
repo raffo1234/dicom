@@ -206,19 +206,49 @@ function findFirstDcmFileRecursive(
   return undefined;
 }
 
+const editFileAtIndex = (
+  files: { file: File; message: string; bgColor: string }[],
+  setFiles: React.Dispatch<
+    React.SetStateAction<{ file: File; message: string; bgColor: string }[]>
+  >,
+  index: number,
+  message: string,
+  bgColor: string
+) => {
+  setFiles((prevFiles) => {
+    if (index >= 0 && index < prevFiles.length) {
+      const updatedFiles = prevFiles.map((item, fileIndex) =>
+        fileIndex === index ? { ...item, message, bgColor } : item
+      );
+      return updatedFiles;
+    } else {
+      console.warn(`Index ${index} is out of bounds for files array.`);
+      return prevFiles;
+    }
+  });
+};
+
 const ImageUploader: React.FC<ImageUploaderProps> = ({
   userId,
   onUploadSuccess,
 }) => {
   const [uploading, setUploading] = useState(false);
-  const [files, setFiles] = useState<FileList | File[]>([]);
+  const [files, setFiles] = useState<
+    { file: File; message: string; bgColor: string }[]
+  >([]);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = event.target.files || [];
 
-    setFiles(Array.from(selectedFiles));
+    Array.from(selectedFiles).map((file) => {
+      setFiles((prev) => [
+        ...prev,
+        { file, message: "Selected", bgColor: "bg-gray-50" },
+      ]);
+    });
+
     setError(null);
     setMessage(null);
   };
@@ -241,7 +271,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     const fileErrors: string[] = [];
     const successfulFiles: string[] = [];
 
-    for (const selectedFile of Array.from(files)) {
+    Array.from(files).map(async ({ file: selectedFile }, index) => {
       try {
         const fileName = selectedFile.name;
         const fileExt = fileName.split(".").pop();
@@ -276,11 +306,18 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 const extractedMetadata: DicomMetadata =
                   extractPatientAndStudyInfo(directoryRecordItems);
 
-                const data = await insertDataSetToDb(userId, extractedMetadata);
-                if (data) {
-                  setMessage("This record already exists");
-                  return;
-                }
+                const insertedData = await insertDataSetToDb(
+                  userId,
+                  extractedMetadata
+                );
+
+                editFileAtIndex(
+                  files,
+                  setFiles,
+                  index,
+                  insertedData ? "Inserted" : "Already exist!",
+                  insertedData ? "bg-green-50" : "bg-yellow-50"
+                );
               }
             } else {
               const dcmFileArrayBuffer = await dcmFile.arrayBuffer();
@@ -299,11 +336,18 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 institutionName: dataSet.string("x00080080"),
               };
 
-              const data = await insertDataSetToDb(userId, extractedMetadata);
-              if (data) {
-                setMessage("This record already exists");
-                return;
-              }
+              const insertedData = await insertDataSetToDb(
+                userId,
+                extractedMetadata
+              );
+
+              editFileAtIndex(
+                files,
+                setFiles,
+                index,
+                insertedData ? "Inserted" : "Already exist!",
+                insertedData ? "bg-green-50" : "bg-yellow-50"
+              );
             }
           } else {
             fileErrors.push("No .dicm files found. Let's try again");
@@ -316,7 +360,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       } catch {
         fileErrors.push(`Reading or loading ${selectedFile.name}`);
       }
-    }
+    });
 
     if (fileErrors.length > 0) {
       setError(`Some files failed: ${fileErrors.join("; ")}`);
@@ -333,7 +377,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    setFiles(acceptedFiles || []);
+    Array.from(acceptedFiles).map((file) => {
+      setFiles((prev) => [...prev, { file, message: "Selected" }]);
+    });
+
     setError(null);
     setMessage(null);
   }, []);
@@ -399,16 +446,19 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
               Selected File{files.length === 1 ? "" : "s"} ({files.length})
             </div>
             <div className="border-t border-gray-200">
-              {Array.from(files).map((file, index) => {
+              {Array.from(files).map(({ file, message, bgColor }, index) => {
                 return (
-                  file && (
-                    <p
-                      key={index}
-                      className="truncate text-sm text-gray-500 px-5 py-2 first:border-0 border-t border-gray-200"
-                    >
+                  <div
+                    key={index}
+                    className={`${bgColor} flex text-sm items-center gap-2  px-5 py-2 first:border-0 border-t border-gray-200`}
+                  >
+                    <div key={index} className="truncate">
                       {file.name}
-                    </p>
-                  )
+                    </div>
+                    <div className="w-20 whitespace-nowrap flex-shrink-0">
+                      {message}
+                    </div>
+                  </div>
                 );
               })}
             </div>
