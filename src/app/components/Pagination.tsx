@@ -269,7 +269,9 @@ export default function Pagination({
                       ${state === DicomStateEnum.VIEWED ? "bg-yellow-100" : ""}
                       ${state === DicomStateEnum.DRAFT ? "bg-orange-100" : ""}
                       ${state === DicomStateEnum.COMPLETED ? "bg-cyan-100" : ""}
-                      ${index % 2 === 0 && !state ? "bg-gray-50" : ""} ${index === 0 ? " " : "border-t border-gray-200"}`}
+                      ${index % 2 === 0 && !state ? "bg-gray-50" : ""} ${
+                        index === 0 ? " " : "border-t border-gray-200"
+                      }`}
                     >
                       <td className="whitespace-nowrap py-5 px-3">
                         {startItemNumber + index}
@@ -309,31 +311,34 @@ export default function Pagination({
                       <td className="py-5 px-2">{modality}</td>
                       <td className="py-2 px-2">
                         <div className="flex gap-1 justify-end">
-                          {state !== DicomStateEnum.COMPLETED ? (
-                            <Link
-                              href={`/admin/dicoms/${id}`}
-                              title="Inform"
-                              className="py-2 px-6 flex gap-3 items-center font-semibold border bg-cyan-500 text-white rounded-full cursor-pointer"
-                            >
-                              <Icon
-                                icon="solar:document-add-linear"
-                                fontSize={24}
-                              />
-                              <span>Inform</span>
-                            </Link>
-                          ) : (
-                            <>
-                              <Link
-                                target="_blank"
-                                href={`/admin/dicoms/preview/pdf/${id}`}
-                                title="PDF Preview"
-                                className="py-2 text-xs px-6 flex gap-3 items-center font-semibold bg-rose-400 text-white rounded-full cursor-pointer"
-                              >
-                                PDF
-                              </Link>
-                              <DOCXPreview dicom={data[index]} />
-                            </>
-                          )}
+                          <Link
+                            href={`/admin/dicoms/${id}`}
+                            title="Inform"
+                            className="py-2 px-6 flex gap-3 items-center font-semibold border bg-cyan-500 text-white rounded-full cursor-pointer"
+                          >
+                            <Icon
+                              icon={`${
+                                state !== DicomStateEnum.COMPLETED
+                                  ? "solar:file-check-linear"
+                                  : "solar:document-add-linear"
+                              }`}
+                              fontSize={24}
+                            />
+                            <span>
+                              {state !== DicomStateEnum.COMPLETED
+                                ? "Inform"
+                                : "Amend"}
+                            </span>
+                          </Link>
+                          <Link
+                            target="_blank"
+                            href={`/admin/dicoms/preview/pdf/${id}`}
+                            title="PDF Preview"
+                            className="py-2 text-xs px-6 flex gap-3 items-center font-semibold bg-rose-400 text-white rounded-full cursor-pointer"
+                          >
+                            PDF
+                          </Link>
+                          <DOCXPreview dicom={data[index]} />
                         </div>
                       </td>
                     </tr>
