@@ -106,6 +106,24 @@ async function insertDataSetToDb(userId: string, dataSet: DicomMetadata) {
   }
 }
 
+enum CustomFileStateType {
+  selected = "Selected",
+  processing = "Processing...",
+  processed = "Processed",
+  duplicated = "Duplicated",
+  inserted = "Inserted",
+  noTag = "No Tag found",
+  noDcimFile = "No .dcim file",
+  fileNotSupported = "File no supported!",
+  errorLoading = "Error loading!",
+}
+
+type CustomFileType = {
+  file: File;
+  state: CustomFileStateType;
+  bgColor: string;
+};
+
 interface DicomdirInfo {
   patientName?: string;
   patientId?: string;
@@ -220,18 +238,16 @@ function findFirstDcmFileRecursive(
 }
 
 const editFileAtIndex = (
-  files: { file: File; message: string; bgColor: string }[],
-  setFiles: React.Dispatch<
-    React.SetStateAction<{ file: File; message: string; bgColor: string }[]>
-  >,
+  files: CustomFileType[],
+  setFiles: React.Dispatch<React.SetStateAction<CustomFileType[]>>,
   index: number,
-  message: string,
+  state: CustomFileStateType,
   bgColor: string
 ) => {
   setFiles((prevFiles) => {
     if (index >= 0 && index < prevFiles.length) {
       const updatedFiles = prevFiles.map((item, fileIndex) =>
-        fileIndex === index ? { ...item, message, bgColor } : item
+        fileIndex === index ? { ...item, state, bgColor } : item
       );
       return updatedFiles;
     } else {
@@ -246,11 +262,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   onUploadSuccess,
 }) => {
   const [uploading, setUploading] = useState(false);
-  const [files, setFiles] = useState<
-    { file: File; message: string; bgColor: string }[]
-  >([]);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const [files, setFiles] = useState<CustomFileType[]>([]);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = event.target.files || [];
@@ -258,35 +270,32 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     Array.from(selectedFiles).map((file) => {
       setFiles((prev) => [
         ...prev,
-        { file, message: "Selected", bgColor: "bg-gray-50" },
+        {
+          file,
+          state: CustomFileStateType.selected,
+          bgColor: "bg-gray-50",
+        },
       ]);
     });
-
-    setError(null);
-    setMessage(null);
   };
 
   const handleUpload = async () => {
-    if (files.length === 0) {
-      setError("Please select a compressed file containing .dcim files.");
-      return;
-    }
-
-    if (!userId) {
-      setError("User ID is missing.");
-      return;
-    }
-
     setUploading(true);
-    setError(null);
-    setMessage(null);
-
-    const fileErrors: string[] = [];
-    const successfulFiles: string[] = [];
 
     for (let index = 0; index < files.length; index++) {
+      if (files[index].state !== CustomFileStateType.selected) continue;
+
       const selectedFile = files[index].file;
+
       try {
+        editFileAtIndex(
+          files,
+          setFiles,
+          index,
+          CustomFileStateType.processing,
+          "bg-cyan-50"
+        );
+
         const fileName = selectedFile.name;
         const fileExt = fileName.split(".").pop();
 
@@ -310,7 +319,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 dataSet.elements.x00041220;
 
               if (!directoryRecordSequenceElement?.items) {
-                fileErrors.push(
+                editFileAtIndex(
+                  files,
+                  setFiles,
+                  index,
+                  CustomFileStateType.noTag,
+                  "bg-rose-50"
+                );
+                console.warn(
                   "Could not find Directory Record Sequence (Tag 0004,1220) in the file."
                 );
               } else {
@@ -329,7 +345,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                   files,
                   setFiles,
                   index,
-                  insertedData ? "Inserted" : "Already exist!",
+                  insertedData
+                    ? CustomFileStateType.inserted
+                    : CustomFileStateType.duplicated,
                   insertedData ? "bg-green-50" : "bg-yellow-50"
                 );
               }
@@ -359,34 +377,46 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 files,
                 setFiles,
                 index,
-                insertedData ? "Inserted" : "Already exist!",
+                insertedData
+                  ? CustomFileStateType.inserted
+                  : CustomFileStateType.duplicated,
                 insertedData ? "bg-green-50" : "bg-yellow-50"
               );
             }
           } else {
-            fileErrors.push("No .dicm files found. Let's try again");
+            editFileAtIndex(
+              files,
+              setFiles,
+              index,
+              CustomFileStateType.noDcimFile,
+              "bg-rose-50"
+            );
           }
         } else {
+          if (onUploadSuccess) {
+            onUploadSuccess();
+          }
           setUploading(false);
           setFiles([]);
-          fileErrors.push("File not supported, please try again.");
+          editFileAtIndex(
+            files,
+            setFiles,
+            index,
+            CustomFileStateType.fileNotSupported,
+            "bg-rose-50"
+          );
         }
       } catch {
-        fileErrors.push(`Reading or loading ${selectedFile.name}`);
+        editFileAtIndex(
+          files,
+          setFiles,
+          index,
+          CustomFileStateType.errorLoading,
+          "bg-rose-50"
+        );
       }
     }
 
-    if (fileErrors.length > 0) {
-      setError(`Some files failed: ${fileErrors.join("; ")}`);
-    } else if (successfulFiles.length > 0) {
-      setMessage(`Successfully processed ${successfulFiles.length} file(s).`);
-      setFiles([]);
-      if (onUploadSuccess) {
-        onUploadSuccess();
-      }
-    } else {
-      setMessage("Files were successfully processed.");
-    }
     setUploading(false);
   };
 
@@ -394,12 +424,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     Array.from(acceptedFiles).map((file) => {
       setFiles((prev) => [
         ...prev,
-        { file, message: "Selected", bgColor: "bg-gray-50" },
+        {
+          file,
+          state: CustomFileStateType.selected,
+          bgColor: "bg-gray-50",
+        },
       ]);
+      
     });
-
-    setError(null);
-    setMessage(null);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -458,22 +490,22 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         <h2 className="text-gray-400 text-sm mb-1">.zip, .rar, .tar files</h2>
         <h4 className="font-semibold">Drag and Drop your files here</h4>
         {files.length > 0 ? (
-          <div className="border border-gray-200 rounded-xl mt-6 max-w-md">
+          <div className="border w-full border-gray-200 rounded-xl mt-6 max-w-md">
             <div className="text-sm font-semibold px-5 py-2 bg-gray-100 rounded-t-xl">
               Selected File{files.length === 1 ? "" : "s"} ({files.length})
             </div>
             <div className="border-t border-gray-200">
-              {Array.from(files).map(({ file, message, bgColor }, index) => {
+              {Array.from(files).map(({ file, state, bgColor }, index) => {
                 return (
                   <div
                     key={index}
-                    className={`${bgColor} last:rounded-b-xl flex text-sm items-center gap-2  px-5 py-2 first:border-0 border-t border-gray-200`}
+                    className={`${bgColor} last:rounded-b-xl flex text-sm items-center gap-2 first:border-0 border-t border-gray-200`}
                   >
-                    <div key={index} className="truncate">
+                    <div key={index} className="truncate flex-1 px-5 py-2">
                       {file.name}
                     </div>
-                    <div className="w-20 whitespace-nowrap flex-shrink-0">
-                      {message}
+                    <div className="w-28 whitespace-nowrap flex-shrink-0 px-5 py-2 text-center border-l border-gray-200">
+                      {state}
                     </div>
                   </div>
                 );
@@ -490,62 +522,47 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           multiple
         />
       </div>
-      {files.length > 0 && !message ? (
-        <div className="mt-4 flex justify-center">
-          <button
-            type="button"
-            className="flex gap-4 items-center text-white disabled:cursor-no-drop cursor-pointer font-semibold disabled:border-cyan-400 disabled:bg-cyan-400 py-3 px-10 bg-cyan-500 hover:bg-cyan-400 transition-colors duration-500 rounded-lg"
-            disabled={uploading}
-            onClick={handleUpload}
-          >
-            {uploading ? (
-              <Icon
-                icon="solar:record-broken"
-                fontSize={26}
-                className="animate-spin"
-              />
-            ) : (
-              <Icon icon="solar:upload-minimalistic-linear" fontSize={26} />
-            )}
-            <span>
-              {uploading
-                ? "Processing..."
-                : `Process File${files.length === 1 ? "" : "s"}`}
-            </span>
-          </button>
-        </div>
-      ) : null}
-      {error && (
-        <p className="w-fit text-sm px-4 py-2 border border-rose-200 flex items-center gap-3 bg-rose-50 rounded-xl mt-3">
-          <Icon
-            icon="solar:close-circle-broken"
-            className="flex-shrink-0"
-            fontSize={24}
-          ></Icon>
-          <span>Error: {error}</span>
-        </p>
-      )}
-      {message && (
-        <div className="flex items-center justify-between gap-4 mt-3">
-          <p className="w-fit text-sm px-4 py-2 border border-green-200 bg-green-50 flex items-center gap-3 rounded-xl">
+
+      {files.length > 0 &&
+      files.filter((file) => file.state === CustomFileStateType.selected)
+        .length > 0 ? (
+        <button
+          type="button"
+          className="flex mx-auto mt-4 gap-4 items-center text-white disabled:cursor-no-drop cursor-pointer font-semibold disabled:border-cyan-400 disabled:bg-cyan-400 py-3 px-10 bg-cyan-500 hover:bg-cyan-400 transition-colors duration-500 rounded-lg"
+          disabled={uploading}
+          onClick={handleUpload}
+        >
+          {uploading ? (
             <Icon
-              icon="solar:check-circle-broken"
-              className="flex-shrink-0"
-              fontSize={24}
-            ></Icon>
-            <span>Success: {message}</span>
-          </p>
+              icon="solar:record-broken"
+              fontSize={26}
+              className="animate-spin"
+            />
+          ) : (
+            <Icon icon="solar:upload-minimalistic-linear" fontSize={26} />
+          )}
+          <span>
+            {uploading
+              ? "Processing..."
+              : `Process File${files.length === 1 ? "" : "s"}`}
+          </span>
+        </button>
+      ) : null}
+
+      {files.length > 0 &&
+      files.filter((file) => file.state === CustomFileStateType.inserted)
+        .length > 0 ? (
+        <div className="flex mt-4 justify-end">
           <Link
             href="/admin/dicoms"
-            title="View All"
-            className="w-fit text-lg flex items-center gap-4 px-8 py-2 bg-black text-white rounded-full transition-colors duration-700 hover:bg-gray-800 active:bg-gray-900"
+            className="flex items-center gap-2 cursor-pointer text-center p-3 text-cyan-400 group"
+            title="View new records"
           >
-            <Icon icon="solar:file-text-linear" fontSize={24}></Icon>
-            <span>View All</span>
-            <Icon icon="solar:arrow-right-broken" fontSize={24}></Icon>
+            <Icon icon="solar:file-text-line-duotone" fontSize={24} />
+            <span className="group-hover:underline">View Inserted Records</span>
           </Link>
         </div>
-      )}
+      ) : null}
     </>
   );
 };
