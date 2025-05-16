@@ -57,6 +57,51 @@ type ImageUploaderProps = {
   onUploadSuccess?: () => void;
 };
 
+function findMultipleFoldersAtSameLevel(
+  extractedFilesObject: ExtractedFilesObject
+): ExtractedFilesObject | undefined {
+  const folders: ExtractedFilesObject = {};
+  let folderCount = 0;
+
+  for (const key in extractedFilesObject) {
+    if (Object.prototype.hasOwnProperty.call(extractedFilesObject, key)) {
+      const item = extractedFilesObject[key];
+      if (
+        typeof item === "object" &&
+        item !== null &&
+        !(item instanceof File)
+      ) {
+        folders[key] = item as ExtractedFilesObject;
+        folderCount++;
+      }
+    }
+  }
+
+  if (folderCount >= 2) {
+    return folders;
+  }
+
+  for (const key in extractedFilesObject) {
+    if (Object.prototype.hasOwnProperty.call(extractedFilesObject, key)) {
+      const item = extractedFilesObject[key];
+      if (
+        typeof item === "object" &&
+        item !== null &&
+        !(item instanceof File)
+      ) {
+        const result = findMultipleFoldersAtSameLevel(
+          item as ExtractedFilesObject
+        );
+        if (result) {
+          return result;
+        }
+      }
+    }
+  }
+
+  return undefined;
+}
+
 interface ExtractedFilesObject {
   [name: string]: File | ExtractedFilesObject;
 }
@@ -68,6 +113,7 @@ async function insertDataSetToDb(userId: string, dataSet: DicomMetadata) {
     .select("id", { count: "exact", head: true })
     .eq("patient_name", dataSet.patientName)
     .eq("study_date", dataSet.studyDate)
+    .eq("study_description", dataSet.studyDescription)
     .eq("user_id", userId);
 
   if (error) {
@@ -238,6 +284,58 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           const archive = await Archive.open(selectedFile);
           const extractedFiles = await archive.extractFiles();
 
+          const folders = findMultipleFoldersAtSameLevel(extractedFiles);
+
+          if (folders && Object.keys(folders).length > 0) {
+            for (const [key, value] of Object.entries(folders)) {
+              console.warn(key);
+
+              const dcmFile = await findFirstDcmFileRecursive(value);
+              if (dcmFile) {
+                const dcmFileArrayBuffer = await dcmFile.arrayBuffer();
+                const byteArray: Uint8Array = new Uint8Array(
+                  dcmFileArrayBuffer
+                );
+                const dataSet: DicomDataSet = dicomParser.parseDicom(byteArray);
+
+                const extractedMetadata = {
+                  patientName: dataSet.string("x00100010"),
+                  patientId: dataSet.string("x00100020"),
+                  patientAge: dataSet.string("x00101010"),
+                  studyDescription: dataSet.string("x00081030"),
+                  modality: dataSet.string("x00080060"),
+                  studyDate: dataSet.string("x00080020"),
+                  patientSex: dataSet.string("x00100040"),
+                  patientBirthDate: dataSet.string("x00100030"),
+                  institutionName: dataSet.string("x00080080"),
+                };
+
+                const insertedData = await insertDataSetToDb(
+                  userId,
+                  extractedMetadata
+                );
+
+                editFileAtIndex(
+                  files,
+                  setFiles,
+                  index,
+                  insertedData
+                    ? CustomFileStateType.inserted
+                    : CustomFileStateType.duplicated,
+                  insertedData ? "bg-green-50" : "bg-yellow-50"
+                );
+              } else {
+                editFileAtIndex(
+                  files,
+                  setFiles,
+                  index,
+                  CustomFileStateType.noDcimFile,
+                  "bg-rose-50"
+                );
+              }
+            }
+          }
+
           const dcmFile = await findFirstDcmFileRecursive(extractedFiles);
 
           if (dcmFile) {
@@ -271,7 +369,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 : CustomFileStateType.duplicated,
               insertedData ? "bg-green-50" : "bg-yellow-50"
             );
-            // }
           } else {
             editFileAtIndex(
               files,
@@ -392,7 +489,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                     <div key={index} className="truncate flex-1 px-5 py-2">
                       {file.name}
                     </div>
-                    <div className="w-28 whitespace-nowrap flex-shrink-0 px-5 py-2 text-center border-l border-gray-200">
+                    <div className="w-32 whitespace-nowrap flex-shrink-0 px-5 py-2 text-center border-l border-gray-200">
                       {state}
                     </div>
                   </div>
@@ -432,7 +529,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           <span>
             {uploading
               ? "Processing..."
-              : `Process File${files.length === 1 ? "" : "s"}`}
+              : `Process File${files.filter((file) => file.state === CustomFileStateType.selected).length === 1 ? "" : "s"}`}
           </span>
         </button>
       ) : null}
