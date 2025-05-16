@@ -113,7 +113,7 @@ enum CustomFileStateType {
   duplicated = "Duplicated",
   inserted = "Inserted",
   noTag = "No Tag found",
-  noDcimFile = "No .dcim file",
+  noDcimFile = "No DICOM file",
   fileNotSupported = "File no supported!",
   errorLoading = "Error loading!",
 }
@@ -124,100 +124,13 @@ type CustomFileType = {
   bgColor: string;
 };
 
-interface DicomdirInfo {
-  patientName?: string;
-  patientId?: string;
-  patientBirthDate?: string;
-  patientSex?: string;
-  studyDate?: string;
-  patientAge?: string;
-  studyDescription?: string;
-  institutionName?: string;
-  modality?: string;
-}
-
-function extractPatientAndStudyInfo(
-  directoryRecordItems: DicomElement[]
-): DicomdirInfo {
-  const dicomdirInfo: DicomdirInfo = {};
-
-  let patientFound = false;
-  let studyFound = false;
-  let institutionFound = false;
-  let modalityFound = false;
-
-  for (const item of directoryRecordItems) {
-    if (patientFound && studyFound && institutionFound && modalityFound) {
-      break;
-    }
-
-    const recordDataSet: DicomDataSet | undefined = item.dataSet;
-
-    if (!recordDataSet) {
-      console.warn("Skipping record item with no dataSet.");
-      continue;
-    }
-
-    if (!institutionFound) {
-      const institutionName = recordDataSet.string("x00080080");
-      if (institutionName !== undefined && institutionName.trim() !== "") {
-        console.warn("Found first Institution Name:", institutionName);
-        dicomdirInfo.institutionName = institutionName;
-        institutionFound = true;
-      }
-    }
-
-    if (!modalityFound) {
-      const modality = recordDataSet.string("x00080060");
-      if (modality !== undefined && modality.trim() !== "") {
-        console.warn("Found first Modality:", modality);
-        dicomdirInfo.modality = modality;
-        modalityFound = true;
-      }
-    }
-
-    const recordType: string | undefined = recordDataSet.string("x00041430");
-
-    switch (recordType) {
-      case "PATIENT":
-        if (!patientFound) {
-          console.warn("Found first Patient record.");
-          dicomdirInfo.patientName = recordDataSet.string("x00100010");
-          dicomdirInfo.patientId = recordDataSet.string("x00100020");
-          dicomdirInfo.patientBirthDate = recordDataSet.string("x00100030");
-          dicomdirInfo.patientSex = recordDataSet.string("x00100040");
-          dicomdirInfo.patientAge = recordDataSet.string("x00101010");
-          patientFound = true;
-        }
-        break;
-      case "STUDY":
-        if (!studyFound) {
-          console.warn("Found first Study record.");
-          dicomdirInfo.studyDate = recordDataSet.string("x00080020");
-          dicomdirInfo.studyDescription = recordDataSet.string("x00081030");
-          studyFound = true;
-        }
-        break;
-
-      default:
-        break;
-    }
-  }
-
-  return dicomdirInfo;
-}
-
-function findFirstDcmFileRecursive(
+async function findFirstDcmFileRecursive(
   item: File | ExtractedFilesObject
-): File | undefined {
+): Promise<File | undefined> {
   if (item instanceof File) {
-    const lowerCaseName = item.name.toLowerCase();
+    const isDicom = await isDicomFile(item);
 
-    if (
-      (lowerCaseName === "dicomdir" &&
-        item.type === "application/octet-stream") ||
-      lowerCaseName.endsWith(".dcm")
-    ) {
+    if (isDicom) {
       return item;
     }
   } else if (typeof item === "object" && item !== null) {
@@ -235,6 +148,28 @@ function findFirstDcmFileRecursive(
   }
 
   return undefined;
+}
+
+async function isDicomFile(file: File): Promise<boolean> {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const byteArray = new Uint8Array(arrayBuffer);
+
+    if (byteArray.length >= 132) {
+      if (
+        byteArray[128] === 68 && // 'D'
+        byteArray[129] === 73 && // 'I'
+        byteArray[130] === 67 && // 'C'
+        byteArray[131] === 77 // 'M'
+      ) {
+        return true;
+      }
+    }
+    return false;
+  } catch (error) {
+    console.error("Error reading file:", error);
+    return false;
+  }
 }
 
 const editFileAtIndex = (
@@ -303,86 +238,40 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           const archive = await Archive.open(selectedFile);
           const extractedFiles = await archive.extractFiles();
 
-          const dcmFile = findFirstDcmFileRecursive(extractedFiles);
-
-          const isDICOMDIR =
-            dcmFile?.name.toLowerCase() === "dicomdir" &&
-            dcmFile.type === "application/octet-stream";
+          const dcmFile = await findFirstDcmFileRecursive(extractedFiles);
 
           if (dcmFile) {
-            if (isDICOMDIR) {
-              const dcmFileArrayBuffer = await dcmFile.arrayBuffer();
-              const byteArray: Uint8Array = new Uint8Array(dcmFileArrayBuffer);
-              const dataSet: DicomDataSet = dicomParser.parseDicom(byteArray);
+            const dcmFileArrayBuffer = await dcmFile.arrayBuffer();
+            const byteArray: Uint8Array = new Uint8Array(dcmFileArrayBuffer);
+            const dataSet: DicomDataSet = dicomParser.parseDicom(byteArray);
 
-              const directoryRecordSequenceElement: DicomElement | undefined =
-                dataSet.elements.x00041220;
+            const extractedMetadata = {
+              patientName: dataSet.string("x00100010"),
+              patientId: dataSet.string("x00100020"),
+              patientAge: dataSet.string("x00101010"),
+              studyDescription: dataSet.string("x00081030"),
+              modality: dataSet.string("x00080060"),
+              studyDate: dataSet.string("x00080020"),
+              patientSex: dataSet.string("x00100040"),
+              patientBirthDate: dataSet.string("x00100030"),
+              institutionName: dataSet.string("x00080080"),
+            };
 
-              if (!directoryRecordSequenceElement?.items) {
-                editFileAtIndex(
-                  files,
-                  setFiles,
-                  index,
-                  CustomFileStateType.noTag,
-                  "bg-rose-50"
-                );
-                console.warn(
-                  "Could not find Directory Record Sequence (Tag 0004,1220) in the file."
-                );
-              } else {
-                const directoryRecordItems: DicomElement[] =
-                  directoryRecordSequenceElement.items;
+            const insertedData = await insertDataSetToDb(
+              userId,
+              extractedMetadata
+            );
 
-                const extractedMetadata: DicomMetadata =
-                  extractPatientAndStudyInfo(directoryRecordItems);
-
-                const insertedData = await insertDataSetToDb(
-                  userId,
-                  extractedMetadata
-                );
-
-                editFileAtIndex(
-                  files,
-                  setFiles,
-                  index,
-                  insertedData
-                    ? CustomFileStateType.inserted
-                    : CustomFileStateType.duplicated,
-                  insertedData ? "bg-green-50" : "bg-yellow-50"
-                );
-              }
-            } else {
-              const dcmFileArrayBuffer = await dcmFile.arrayBuffer();
-              const byteArray: Uint8Array = new Uint8Array(dcmFileArrayBuffer);
-              const dataSet: DicomDataSet = dicomParser.parseDicom(byteArray);
-
-              const extractedMetadata = {
-                patientName: dataSet.string("x00100010"),
-                patientId: dataSet.string("x00100020"),
-                patientAge: dataSet.string("x00101010"),
-                studyDescription: dataSet.string("x00081030"),
-                modality: dataSet.string("x00080060"),
-                studyDate: dataSet.string("x00080020"),
-                patientSex: dataSet.string("x00100040"),
-                patientBirthDate: dataSet.string("x00100030"),
-                institutionName: dataSet.string("x00080080"),
-              };
-
-              const insertedData = await insertDataSetToDb(
-                userId,
-                extractedMetadata
-              );
-
-              editFileAtIndex(
-                files,
-                setFiles,
-                index,
-                insertedData
-                  ? CustomFileStateType.inserted
-                  : CustomFileStateType.duplicated,
-                insertedData ? "bg-green-50" : "bg-yellow-50"
-              );
-            }
+            editFileAtIndex(
+              files,
+              setFiles,
+              index,
+              insertedData
+                ? CustomFileStateType.inserted
+                : CustomFileStateType.duplicated,
+              insertedData ? "bg-green-50" : "bg-yellow-50"
+            );
+            // }
           } else {
             editFileAtIndex(
               files,
@@ -430,7 +319,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           bgColor: "bg-gray-50",
         },
       ]);
-      
     });
   }, []);
 
