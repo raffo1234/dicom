@@ -57,11 +57,53 @@ type ImageUploaderProps = {
   onUploadSuccess?: () => void;
 };
 
-function findMultipleFoldersAtSameLevel(
+async function isDicomFile(file: File): Promise<boolean> {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const byteArray = new Uint8Array(arrayBuffer);
+
+    if (byteArray.length >= 132) {
+      if (
+        byteArray[128] === 68 && // 'D'
+        byteArray[129] === 73 && // 'I'
+        byteArray[130] === 67 && // 'C'
+        byteArray[131] === 77 // 'M'
+      ) {
+        return true;
+      }
+    }
+    return false;
+  } catch (error) {
+    console.error("Error reading file:", error);
+    return false;
+  }
+}
+
+async function getStudyDescription(file: File): Promise<string | undefined> {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const byteArray = new Uint8Array(arrayBuffer);
+    if (
+      byteArray.length >= 132 &&
+      byteArray[128] === 0x44 &&
+      byteArray[129] === 0x49 &&
+      byteArray[130] === 0x43 &&
+      byteArray[131] === 0x4d
+    ) {
+      const dataSet = dicomParser.parseDicom(byteArray);
+      return dataSet.string("x00081030");
+    }
+    return undefined;
+  } catch (error) {
+    console.error("Error parsing DICOM file:", error);
+    return undefined;
+  }
+}
+
+async function findFirstLevelMultipleFoldersWithDifferentStudyDescription(
   extractedFilesObject: ExtractedFilesObject
-): ExtractedFilesObject | undefined {
-  const folders: ExtractedFilesObject = {};
-  let folderCount = 0;
+): Promise<ExtractedFilesObject[] | undefined> {
+  const currentLevelFolders: ExtractedFilesObject[] = [];
 
   for (const key in extractedFilesObject) {
     if (Object.prototype.hasOwnProperty.call(extractedFilesObject, key)) {
@@ -71,35 +113,52 @@ function findMultipleFoldersAtSameLevel(
         item !== null &&
         !(item instanceof File)
       ) {
-        folders[key] = item as ExtractedFilesObject;
-        folderCount++;
+        currentLevelFolders.push(item as ExtractedFilesObject);
       }
     }
   }
 
-  if (folderCount >= 2) {
-    return folders;
-  }
+  if (currentLevelFolders.length >= 2) {
+    const studyDescriptions: (string | undefined)[] = await Promise.all(
+      currentLevelFolders.map(async (folder) => {
+        const firstDicom = await findFirstDcmFileRecursive(folder);
+        return firstDicom ? await getStudyDescription(firstDicom) : undefined;
+      })
+    );
 
-  for (const key in extractedFilesObject) {
-    if (Object.prototype.hasOwnProperty.call(extractedFilesObject, key)) {
-      const item = extractedFilesObject[key];
-      if (
-        typeof item === "object" &&
-        item !== null &&
-        !(item instanceof File)
-      ) {
-        const result = findMultipleFoldersAtSameLevel(
-          item as ExtractedFilesObject
-        );
-        if (result) {
-          return result;
+    const uniqueDescriptions = [
+      ...new Set(studyDescriptions.filter((desc) => desc !== undefined)),
+    ];
+
+    if (
+      uniqueDescriptions.length === currentLevelFolders.length &&
+      currentLevelFolders.length > 1
+    ) {
+      return currentLevelFolders;
+    } else {
+      return undefined;
+    }
+  } else {
+    for (const key in extractedFilesObject) {
+      if (Object.prototype.hasOwnProperty.call(extractedFilesObject, key)) {
+        const item = extractedFilesObject[key];
+        if (
+          typeof item === "object" &&
+          item !== null &&
+          !(item instanceof File)
+        ) {
+          const result =
+            await findFirstLevelMultipleFoldersWithDifferentStudyDescription(
+              item as ExtractedFilesObject
+            );
+          if (result) {
+            return result;
+          }
         }
       }
     }
+    return undefined;
   }
-
-  return undefined;
 }
 
 interface ExtractedFilesObject {
@@ -174,9 +233,12 @@ async function findFirstDcmFileRecursive(
   item: File | ExtractedFilesObject
 ): Promise<File | undefined> {
   if (item instanceof File) {
-    const isDicom = await isDicomFile(item);
+    if (item.name.toLowerCase() === "dicomdir") {
+      return undefined; // Ignore files named "DICOMDIR"
+    }
+    const isValidDicom = await isDicomFile(item);
 
-    if (isDicom) {
+    if (isValidDicom) {
       return item;
     }
   } else if (typeof item === "object" && item !== null) {
@@ -184,7 +246,7 @@ async function findFirstDcmFileRecursive(
       if (Object.prototype.hasOwnProperty.call(item, itemName)) {
         const nestedItem = item[itemName];
 
-        const foundFile = findFirstDcmFileRecursive(nestedItem);
+        const foundFile = await findFirstDcmFileRecursive(nestedItem);
 
         if (foundFile) {
           return foundFile;
@@ -194,28 +256,6 @@ async function findFirstDcmFileRecursive(
   }
 
   return undefined;
-}
-
-async function isDicomFile(file: File): Promise<boolean> {
-  try {
-    const arrayBuffer = await file.arrayBuffer();
-    const byteArray = new Uint8Array(arrayBuffer);
-
-    if (byteArray.length >= 132) {
-      if (
-        byteArray[128] === 68 && // 'D'
-        byteArray[129] === 73 && // 'I'
-        byteArray[130] === 67 && // 'C'
-        byteArray[131] === 77 // 'M'
-      ) {
-        return true;
-      }
-    }
-    return false;
-  } catch (error) {
-    console.error("Error reading file:", error);
-    return false;
-  }
 }
 
 const editFileAtIndex = (
@@ -284,7 +324,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           const archive = await Archive.open(selectedFile);
           const extractedFiles = await archive.extractFiles();
 
-          const folders = findMultipleFoldersAtSameLevel(extractedFiles);
+          const folders =
+            await findFirstLevelMultipleFoldersWithDifferentStudyDescription(
+              extractedFiles
+            );
+
+          console.log("folders", folders);
 
           if (folders && Object.keys(folders).length > 0) {
             for (const [key, value] of Object.entries(folders)) {
@@ -334,49 +379,49 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 );
               }
             }
-          }
-
-          const dcmFile = await findFirstDcmFileRecursive(extractedFiles);
-
-          if (dcmFile) {
-            const dcmFileArrayBuffer = await dcmFile.arrayBuffer();
-            const byteArray: Uint8Array = new Uint8Array(dcmFileArrayBuffer);
-            const dataSet: DicomDataSet = dicomParser.parseDicom(byteArray);
-
-            const extractedMetadata = {
-              patientName: dataSet.string("x00100010"),
-              patientId: dataSet.string("x00100020"),
-              patientAge: dataSet.string("x00101010"),
-              studyDescription: dataSet.string("x00081030"),
-              modality: dataSet.string("x00080060"),
-              studyDate: dataSet.string("x00080020"),
-              patientSex: dataSet.string("x00100040"),
-              patientBirthDate: dataSet.string("x00100030"),
-              institutionName: dataSet.string("x00080080"),
-            };
-
-            const insertedData = await insertDataSetToDb(
-              userId,
-              extractedMetadata
-            );
-
-            editFileAtIndex(
-              files,
-              setFiles,
-              index,
-              insertedData
-                ? CustomFileStateType.inserted
-                : CustomFileStateType.duplicated,
-              insertedData ? "bg-green-50" : "bg-yellow-50"
-            );
           } else {
-            editFileAtIndex(
-              files,
-              setFiles,
-              index,
-              CustomFileStateType.noDcimFile,
-              "bg-rose-50"
-            );
+            const dcmFile = await findFirstDcmFileRecursive(extractedFiles);
+            console.log({ dcmFile });
+            if (dcmFile) {
+              const dcmFileArrayBuffer = await dcmFile.arrayBuffer();
+              const byteArray: Uint8Array = new Uint8Array(dcmFileArrayBuffer);
+              const dataSet: DicomDataSet = dicomParser.parseDicom(byteArray);
+
+              const extractedMetadata = {
+                patientName: dataSet.string("x00100010"),
+                patientId: dataSet.string("x00100020"),
+                patientAge: dataSet.string("x00101010"),
+                studyDescription: dataSet.string("x00081030"),
+                modality: dataSet.string("x00080060"),
+                studyDate: dataSet.string("x00080020"),
+                patientSex: dataSet.string("x00100040"),
+                patientBirthDate: dataSet.string("x00100030"),
+                institutionName: dataSet.string("x00080080"),
+              };
+
+              const insertedData = await insertDataSetToDb(
+                userId,
+                extractedMetadata
+              );
+
+              editFileAtIndex(
+                files,
+                setFiles,
+                index,
+                insertedData
+                  ? CustomFileStateType.inserted
+                  : CustomFileStateType.duplicated,
+                insertedData ? "bg-green-50" : "bg-yellow-50"
+              );
+            } else {
+              editFileAtIndex(
+                files,
+                setFiles,
+                index,
+                CustomFileStateType.noDcimFile,
+                "bg-rose-50"
+              );
+            }
           }
         } else {
           if (onUploadSuccess) {
