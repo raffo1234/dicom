@@ -18,6 +18,12 @@ import ContentPDFDocument from "@/components/ContentPDFDocument";
 import DOCXPreview from "@/components/DOCXPreview";
 import GeneratePDFButton from "@/components/GeneratePDFButton";
 
+function putFirst(array: TemplateType[], element: TemplateType | undefined) {
+  if (element)
+    return [element, ...array.filter((item) => item.id !== element.id)];
+  return array;
+}
+
 export default function Report({
   templates,
   userId,
@@ -33,6 +39,7 @@ export default function Report({
   const [activeTemplate, setActiveTemplate] = useState<
     TemplateType | undefined
   >();
+  const sortTemplate = putFirst(templates, activeTemplate);
 
   const PDFDownloadLink = useMemo(
     () =>
@@ -128,9 +135,6 @@ export default function Report({
     setValue(dicom.report);
   }, [dicom.report]);
 
-  console.log("active template id: ==>>>", activeTemplate?.id);
-  console.log("dicom template id: ==>>>", dicom.template_id);
-
   return (
     <>
       <div className="sm:flex mb-6 items-center">
@@ -140,7 +144,7 @@ export default function Report({
             gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
           }}
         >
-          {templates?.map((template) => {
+          {sortTemplate?.map((template) => {
             const { id, name } = template;
             return (
               <button

@@ -52,7 +52,7 @@ export default async function Page({ params }: { params: Params }) {
         </Link>
       </div>
       {dicom ? (
-        <Report templates={templates} dicom={dicom} userId={userId} />
+        <Report templates={templates || []} dicom={dicom} userId={userId} />
       ) : null}
     </>
   );
