@@ -17,7 +17,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async signIn({ user, profile }) {
       console.log("auth-astro signIn callback triggered", { user });

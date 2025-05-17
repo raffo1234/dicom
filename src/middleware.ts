@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { auth } from "@/lib/auth";
 
 export async function middleware(request: NextRequest) {
-  const session = await getToken({
-    req: request,
-    secret: process.env.AUTH_SECRET,
-  });
-
+  const session = await auth();
   const isAuthenticated = !!session;
-
+  console.log("session =====>>>>>", session);
   if (request.nextUrl.pathname.startsWith("/admin") && !isAuthenticated) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();
 }
+
+export const config = {
+  matcher: ["/admin/:path*"],
+};
