@@ -16,6 +16,7 @@ import TableSkeleton from "@/components/FormSkeleton";
 import GeneratePDFButton from "@/components/GeneratePDFButton";
 import ContentPDFDocument from "./ContentPDFDocument";
 import DOCXPreview from "./DOCXPreview";
+import { useDebouncedCallback } from "use-debounce";
 
 type SortDirection = "asc" | "desc" | null;
 
@@ -30,9 +31,25 @@ const fetcherTotal = async (userId: string) => {
 };
 
 const fetcher = async (
-  key: [string, number, number, string | null, SortDirection, string]
+  key: [
+    string,
+    number,
+    number,
+    string | null,
+    SortDirection,
+    string,
+    string | null,
+  ]
 ): Promise<DicomType[] | null> => {
-  const [tableName, page, pageSize, sortColumn, sortDirection, userId] = key;
+  const [
+    tableName,
+    page,
+    pageSize,
+    sortColumn,
+    sortDirection,
+    userId,
+    searchWord,
+  ] = key;
 
   const start = (page - 1) * pageSize;
   const end = start + pageSize - 1;
@@ -49,6 +66,12 @@ const fetcher = async (
     query = query.order(sortColumn, { ascending: sortDirection === "asc" });
   } else {
     query = query.order("created_at", { ascending: false });
+  }
+
+  if (searchWord && searchWord.length > 0) {
+    query = query.or(
+      `patient_id.ilike.%${searchWord}%,patient_name.ilike.%${searchWord}%,institution.ilike.%${searchWord}%,study_description.ilike.%${searchWord}%`
+    );
   }
 
   const { data, error } = await query;
@@ -68,6 +91,10 @@ export default function Pagination({
   tableName: "dicom";
   userId: string;
 }) {
+  const debouncedSearch = useDebouncedCallback((value) => {
+    setSearch(value);
+  }, 400);
+
   const PDFDownloadLink = useMemo(
     () =>
       dynamic(
@@ -84,13 +111,16 @@ export default function Pagination({
   const [pageSize, setPageSize] = useState<number>(8);
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [search, setSearch] = useState<string | null>(null);
 
   const { data, error, isLoading } = useSWR<DicomType[] | null>(
-    [tableName, page, pageSize, sortColumn, sortDirection, userId],
+    [tableName, page, pageSize, sortColumn, sortDirection, userId, search],
     fetcher
   );
 
-  const { data: count } = useSWR("dicom-total", () => fetcherTotal(userId));
+  const { data: count } = useSWR("admin-dicoms-total", () =>
+    fetcherTotal(userId)
+  );
 
   const hasMore: boolean =
     data !== undefined && data !== null && data.length === pageSize;
@@ -145,20 +175,23 @@ export default function Pagination({
 
   return (
     <>
-      <div className="flex mb-4 items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="w-full mb-4">
+        <div className="flex max-w-lg w-full mx-auto sm:mx-0 flex-col sm:flex-row items-center gap-3">
           <Link
             href="/admin/dicom"
             title="Upload Dicoms"
-            className="px-6 text-white py-2 rounded-full bg-black flex gap-2 items-center"
+            className="px-6 text-white w-full justify-center py-2 rounded-full bg-black flex gap-2 items-center"
           >
             <span>Upload</span>
             <Icon icon="solar:add-circle-linear" fontSize={24}></Icon>
           </Link>
-          {/* <input
-            type="search"
-            className="bg-white rounded-full border border-gray-200 outline-0 py-2 px-5"
-          /> */}
+          <input
+            type="text"
+            className="bg-white rounded-full border w-full border-gray-200 outline-0 py-2 px-5"
+            placeholder="Search ..."
+            defaultValue={search ?? ""}
+            onChange={(event) => debouncedSearch(event.target.value)}
+          />
         </div>
       </div>
       <div className="flex justify-end mb-4">
