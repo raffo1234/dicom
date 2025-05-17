@@ -164,7 +164,7 @@ export default function Pagination({
       <div className="flex justify-end mb-4">
         <div className="text-xs flex items-center gap-1">
           <span>
-            Total: <span className="text-base font-semibold">{count}</span>,
+            Total: <span className="text-base font-semibold">{count}</span>
           </span>
           <form action={handlePageSize} className="inline-block">
             <input
@@ -193,68 +193,192 @@ export default function Pagination({
 
       {!isLoading && !error && data && data.length > 0 && (
         <div className="bg-white shadow rounded-xl overflow-auto">
-          <table className="text-sm w-full">
+          <table className="text-sm w-full table-fixed">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left uppercase text-xs font-semibold py-4 px-3">
+                <th className="w-6 text-left uppercase text-xs font-semibold py-4 px-3">
                   #
                 </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 px-2">
-                  Patient ID
+                <th className="w-25 px-1">
+                  <button
+                    type="button"
+                    onClick={() => handleSort("patient_id")}
+                    className="py-3 w-full text-left px-2 rounded-lg cursor-pointer uppercase text-xs font-semibold hover:bg-cyan-50 bg-slate-50 transition-colors duration-300"
+                  >
+                    Patient ID
+                    {sortColumn === "patient_id" && sortDirection && (
+                      <Icon
+                        icon={
+                          sortDirection === "asc"
+                            ? "solar:arrow-up-outline"
+                            : "solar:arrow-down-outline"
+                        }
+                        className="inline-block"
+                        fontSize={14}
+                      />
+                    )}
+                  </button>
                 </th>
-                <th
-                  onClick={() => handleSort("institution")}
-                  className="text-left uppercase text-xs font-semibold py-4 px-2 cursor-pointer"
-                >
-                  Institution Name
-                  {sortColumn === "institution" && sortDirection && (
-                    <Icon
-                      icon={
-                        sortDirection === "asc"
-                          ? "solar:arrow-up-outline"
-                          : "solar:arrow-down-outline"
-                      }
-                      className="inline-block"
-                      fontSize={12}
-                    />
-                  )}
+                <th onClick={() => handleSort("institution")} className="w-46">
+                  <button
+                    type="button"
+                    className="py-3 w-full text-left px-2 rounded-lg cursor-pointer uppercase text-xs font-semibold hover:bg-cyan-50 bg-slate-50 transition-colors duration-300"
+                  >
+                    Institution Name
+                    {sortColumn === "institution" && sortDirection && (
+                      <Icon
+                        icon={
+                          sortDirection === "asc"
+                            ? "solar:arrow-up-outline"
+                            : "solar:arrow-down-outline"
+                        }
+                        className="inline-block"
+                        fontSize={12}
+                      />
+                    )}
+                  </button>
                 </th>
-                <th
-                  onClick={() => handleSort("patient_name")}
-                  className="text-left uppercase text-xs font-semibold py-4 px-2 cursor-pointer"
-                >
-                  Patient Name
-                  {sortColumn === "patient_name" && sortDirection && (
-                    <Icon
-                      icon={
-                        sortDirection === "asc"
-                          ? "solar:arrow-up-outline"
-                          : "solar:arrow-down-outline"
-                      }
-                      className="inline-block ml-1"
-                      fontSize={12}
-                    />
-                  )}
+                <th className="w-60 px-1">
+                  <button
+                    onClick={() => handleSort("patient_name")}
+                    type="button"
+                    className="py-3 w-full text-left px-2 rounded-lg cursor-pointer uppercase text-xs font-semibold hover:bg-cyan-50 bg-slate-50 transition-colors duration-300"
+                  >
+                    Patient Name
+                    {sortColumn === "patient_name" && sortDirection && (
+                      <Icon
+                        icon={
+                          sortDirection === "asc"
+                            ? "solar:arrow-up-outline"
+                            : "solar:arrow-down-outline"
+                        }
+                        className="inline-block ml-1"
+                        fontSize={12}
+                      />
+                    )}
+                  </button>
                 </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 px-2">
-                  Sex
+                <th className="w-14 py-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSort("gender")}
+                    className="py-3 w-full text-left px-2 rounded-lg cursor-pointer uppercase text-xs font-semibold hover:bg-cyan-50 bg-slate-50 transition-colors duration-300"
+                  >
+                    Sex
+                    {sortColumn === "gender" && sortDirection && (
+                      <Icon
+                        icon={
+                          sortDirection === "asc"
+                            ? "solar:arrow-up-outline"
+                            : "solar:arrow-down-outline"
+                        }
+                        className="inline-block ml-1"
+                        fontSize={12}
+                      />
+                    )}
+                  </button>
                 </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 px-2">
-                  Age
+                <th className="w-16 px-1">
+                  <button
+                    type="button"
+                    onClick={() => handleSort("patient_age")}
+                    className="py-3 w-full text-left px-2 rounded-lg cursor-pointer uppercase text-xs font-semibold hover:bg-cyan-50 bg-slate-50 transition-colors duration-300"
+                  >
+                    Age
+                    {sortColumn === "patient_age" && sortDirection && (
+                      <Icon
+                        icon={
+                          sortDirection === "asc"
+                            ? "solar:arrow-up-outline"
+                            : "solar:arrow-down-outline"
+                        }
+                        className="inline-block ml-1"
+                        fontSize={12}
+                      />
+                    )}
+                  </button>
                 </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 px-2">
-                  Study Description
+                <th className="w-40 py-1">
+                  <button
+                    type="button"
+                    onClick={() => handleSort("study_description")}
+                    className="py-3 w-full text-left px-2 rounded-lg cursor-pointer uppercase text-xs font-semibold hover:bg-cyan-50 bg-slate-50 transition-colors duration-300"
+                  >
+                    Study Description
+                    {sortColumn === "study_description" && sortDirection && (
+                      <Icon
+                        icon={
+                          sortDirection === "asc"
+                            ? "solar:arrow-up-outline"
+                            : "solar:arrow-down-outline"
+                        }
+                        className="inline-block ml-1"
+                        fontSize={12}
+                      />
+                    )}
+                  </button>
                 </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 px-2">
-                  Study Date
+                <th className="w-30 px-1">
+                  <button
+                    type="button"
+                    onClick={() => handleSort("study_date")}
+                    className="py-3 w-full text-left px-2 rounded-lg cursor-pointer uppercase text-xs font-semibold hover:bg-cyan-50 bg-slate-50 transition-colors duration-300"
+                  >
+                    Study Date
+                    {sortColumn === "study_date" && sortDirection && (
+                      <Icon
+                        icon={
+                          sortDirection === "asc"
+                            ? "solar:arrow-up-outline"
+                            : "solar:arrow-down-outline"
+                        }
+                        className="inline-block ml-1"
+                        fontSize={12}
+                      />
+                    )}
+                  </button>
                 </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 px-2">
-                  Receipt Date
+                <th className="w-42 py-1">
+                  <button
+                    type="button"
+                    onClick={() => handleSort("created_at")}
+                    className="py-3 w-full text-left px-2 rounded-lg cursor-pointer uppercase text-xs font-semibold hover:bg-cyan-50 bg-slate-50 transition-colors duration-300"
+                  >
+                    Receipt Date
+                    {sortColumn === "created_at" && sortDirection && (
+                      <Icon
+                        icon={
+                          sortDirection === "asc"
+                            ? "solar:arrow-up-outline"
+                            : "solar:arrow-down-outline"
+                        }
+                        className="inline-block ml-1"
+                        fontSize={12}
+                      />
+                    )}
+                  </button>
                 </th>
-                <th className="text-left uppercase text-xs font-semibold py-4 px-2">
-                  M
+                <th title="Modalidad" className="w-13 px-1">
+                  <button
+                    type="button"
+                    onClick={() => handleSort("modality")}
+                    className="py-3 w-full text-left px-2 rounded-lg cursor-pointer uppercase text-xs font-semibold hover:bg-cyan-50 bg-slate-50 transition-colors duration-300"
+                  >
+                    M
+                    {sortColumn === "modality" && sortDirection && (
+                      <Icon
+                        icon={
+                          sortDirection === "asc"
+                            ? "solar:arrow-up-outline"
+                            : "solar:arrow-down-outline"
+                        }
+                        className="inline-block ml-1"
+                        fontSize={12}
+                      />
+                    )}
+                  </button>
                 </th>
-                <th></th>
+                <th className="w-90"></th>
               </tr>
             </thead>
             <tbody className="whitespace-nowrap">
@@ -296,18 +420,27 @@ export default function Pagination({
                           {patient_id}
                         </Link>
                       </td>
-                      <td className="whitespace-nowrap py-5 px-2">
+                      <td
+                        title={institution}
+                        className="truncate whitespace-nowrap py-5 px-2"
+                      >
                         {institution}
                       </td>
-                      <td className="whitespace-nowrap py-5 px-2">
+                      <td
+                        title={patient_name}
+                        className="truncate whitespace-nowrap py-5 px-2"
+                      >
                         {patient_name}
                       </td>
-                      <td className="py-5 px-2">{gender}</td>
+                      <td className="py-5 px-2 text-center">{gender}</td>
                       <td className="whitespace-nowrap py-5 px-2">
                         {extractAgeWidthUnit(patient_age).value}{" "}
                         {extractAgeWidthUnit(patient_age).unit}
                       </td>
-                      <td className="whitespace-nowrap py-5 px-2">
+                      <td
+                        title={study_description}
+                        className="truncate whitespace-nowrap py-5 px-2"
+                      >
                         {study_description}
                       </td>
                       <td className="whitespace-nowrap py-5 px-2">
@@ -323,7 +456,7 @@ export default function Pagination({
                           }
                         )}
                       </td>
-                      <td className="py-5 px-2">{modality}</td>
+                      <td className="py-5 px-2 text-center">{modality}</td>
                       <td className="py-2 px-2">
                         <div className="flex gap-1 justify-end">
                           {state === DicomStateEnum.COMPLETED ? (
