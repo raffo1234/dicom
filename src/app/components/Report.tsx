@@ -50,8 +50,7 @@ export default function Report({
           loading: () => <GeneratePDFButton isDisabled={true} label="PDF" />,
         }
       ),
-    [value, activeTemplate]
-    // value and activeTemplate are needed because @react-pdf/renderer needs to re render to load correctly
+    []
   );
 
   const handleTemplateActive = (template: TemplateType) => {
