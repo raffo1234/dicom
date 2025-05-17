@@ -3,7 +3,6 @@ import FallbackPermission from "@/components/FallbackPermission";
 import Uploader from "@/components/Uploader";
 import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
-// import DicomMetadataUploadLargeFile from "@/components/DicomMetadataUploadLargeFile";
 import { Permissions } from "@/types/propertyState";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Link from "next/link";
@@ -47,7 +46,6 @@ export default async function Page() {
       >
         <Uploader userId={userId} />
       </CheckPermission>
-      {/* <DicomMetadataUploadLargeFile /> */}
     </>
   );
 }

@@ -12,11 +12,12 @@ export default function FallbackPermission() {
         alt="You don't have permission to view this page"
         width={300}
         height={300}
+        className="mb-6"
       />
       <Link
         href="/"
-        title="Ir al Inicio"
-        className="text-lg flex items-center gap-4 px-8 py-2  bg-black text-white rounded-full transition-colors duration-700 hover:bg-gray-800 active:bg-gray-900"
+        title="Go home"
+        className="text-lg flex items-center gap-4 px-8 py-2 bg-black text-white rounded-full transition-colors duration-700 hover:bg-gray-800 active:bg-gray-900"
       >
         <Icon icon="solar:home-smile-angle-broken" fontSize={24}></Icon>
         <span>Go home</span>

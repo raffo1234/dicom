@@ -5,53 +5,89 @@ import Link from "next/link";
 import { useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-
-const pages = [
-  {
-    href: "/admin/dicom",
-    title: "Upload Dicom",
-    iconName: "solar:cloud-upload-broken",
-  },
-  {
-    href: "/admin/dicoms",
-    title: "Dicoms",
-    iconName: "solar:bones-broken",
-  },
-  {
-    href: "/admin/templates",
-    title: "Templates",
-    iconName: "solar:file-favourite-line-duotone",
-  },
-  {
-    href: "/admin/users",
-    title: "Users",
-    iconName: "solar:user-linear",
-  },
-  {
-    href: "/admin/roles",
-    title: "Roles",
-    iconName: "solar:user-check-broken",
-  },
-  {
-    href: "/admin/permisos",
-    title: "Permissions",
-    iconName: "solar:lock-keyhole-broken",
-  },
-];
+import useCheckPermission from "@/hooks/useCheckPermission";
+import { Permissions } from "@/types/propertyState";
 
 export default function Aside({
+  userRoleId,
   userName,
   userImage,
 }: {
+  userRoleId: string;
   userName: string;
   userImage: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const currentPath = usePathname();
 
+  const {
+    hasPermission: hasRolesPermission,
+    isLoading: isLoadingRolesPermission,
+  } = useCheckPermission(userRoleId, Permissions.ADMINISTRAR_ROLES);
+  const {
+    hasPermission: hasUsersPermission,
+    isLoading: isLoadingUsersPermission,
+  } = useCheckPermission(userRoleId, Permissions.ADMINISTRAR_USUARIOS);
+  const {
+    hasPermission: hasPermissionsPermission,
+    isLoading: isLoadingPermissionsPermission,
+  } = useCheckPermission(userRoleId, Permissions.ADMINISTRAR_PERMISOS);
+
+  const pages = [
+    {
+      href: "/admin/dicom",
+      title: "Upload Dicom",
+      iconName: "solar:cloud-upload-broken",
+    },
+    {
+      href: "/admin/dicoms",
+      title: "Dicoms",
+      iconName: "solar:bones-broken",
+    },
+    {
+      href: "/admin/templates",
+      title: "Templates",
+      iconName: "solar:file-favourite-line-duotone",
+    },
+    ...(hasUsersPermission
+      ? [
+          {
+            href: "/admin/users",
+            title: "Users",
+            iconName: "solar:user-linear",
+          },
+        ]
+      : []),
+    ...(hasRolesPermission
+      ? [
+          {
+            href: "/admin/roles",
+            title: "Roles",
+            iconName: "solar:user-check-broken",
+          },
+        ]
+      : []),
+    ...(hasPermissionsPermission
+      ? [
+          {
+            href: "/admin/permisos",
+            title: "Permissions",
+            iconName: "solar:lock-keyhole-broken",
+          },
+        ]
+      : []),
+  ];
+
   const closeMenu = () => {
     return setIsOpen(false);
   };
+
+  if (
+    isLoadingRolesPermission ||
+    isLoadingUsersPermission ||
+    isLoadingPermissionsPermission
+  )
+    return null;
 
   return (
     <div className="flex-shrink-0">

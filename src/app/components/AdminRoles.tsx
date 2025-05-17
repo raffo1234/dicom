@@ -120,7 +120,7 @@ export function Role({
         key={id}
         className={`${
           isOpen ? "bg-gray-50" : ""
-        } w-full first:rounded-t-lg first:border-0 flex gap-3.5 items-center text-left hover:bg-gray-50 transition-colors duration-300 px-6 py-4 border-t border-gray-200`}
+        } w-full first:rounded-t-xl first:border-0 flex gap-3.5 items-center text-left hover:bg-gray-50 transition-colors duration-300 px-6 py-4 border-t border-gray-200`}
       >
         <Icon
           icon="solar:alt-arrow-down-linear"
