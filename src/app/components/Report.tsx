@@ -23,7 +23,7 @@ export default function Report({
   userId,
   dicom,
 }: {
-  templates: TemplateType[] | null;
+  templates: TemplateType[] | [];
   userId?: string;
   dicom: DicomType;
 }) {
@@ -49,7 +49,7 @@ export default function Report({
 
   const handleTemplateActive = (template: TemplateType) => {
     setActiveTemplate(template);
-    updateDicomTemplate(dicom.id, activeTemplate?.id);
+    updateDicomTemplate(dicom.id, template.id);
   };
 
   const debouncedTextarea = useDebouncedCallback((value) => {
@@ -106,11 +106,13 @@ export default function Report({
   };
 
   useEffect(() => {
-    if (templates && templates.length > 0) {
-      setActiveTemplate(templates[0]);
-      updateDicomTemplate(dicom.id, activeTemplate?.id);
+    if (templates.length > 0) {
+      const template =
+        templates.find((template) => template.id === dicom.template_id) ||
+        templates[0];
+      handleTemplateActive(template);
     }
-  }, [templates]);
+  }, []);
 
   useEffect(() => {
     if (!dicom.state) {
@@ -125,6 +127,9 @@ export default function Report({
   useEffect(() => {
     setValue(dicom.report);
   }, [dicom.report]);
+
+  console.log("active template id: ==>>>", activeTemplate?.id);
+  console.log("dicom template id: ==>>>", dicom.template_id);
 
   return (
     <>
