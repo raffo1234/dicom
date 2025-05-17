@@ -1,8 +1,10 @@
+import { auth, signIn } from "@/lib/auth";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Image from "next/image";
 import Link from "next/link";
 
 export default async function Index() {
+  const session = await auth();
   return (
     <div className="flex flex-col justify-center items-center gap-5 sm:gap-7">
       <h1
@@ -17,15 +19,34 @@ export default async function Index() {
       <p className="sm:text-xl text-gray-500">
         Process DICOM & Create Reports with Ease
       </p>
-      <Link
-        href="/admin/dicom"
-        title="Explore Now"
-        style={{ fontFamily: "poppins" }}
-        className="text-lg flex items-center gap-4 px-8 py-3 bg-black text-white rounded-full transition-colors duration-700 hover:bg-gray-800 active:bg-gray-900"
-      >
-        <span>Explore Now</span>
-        <Icon icon="solar:arrow-right-linear" fontSize={24}></Icon>
-      </Link>
+      {session ? (
+        <Link
+          href="/admin/dicom"
+          title="Explore Now"
+          style={{ fontFamily: "poppins" }}
+          className="text-lg flex items-center gap-4 px-8 py-3 bg-black text-white rounded-full transition-colors duration-700 hover:bg-gray-800 active:bg-gray-900"
+        >
+          <span>Explore Now</span>
+          <Icon icon="solar:arrow-right-linear" fontSize={24}></Icon>
+        </Link>
+      ) : (
+        <form
+          action={async () => {
+            "use server";
+            await signIn("google");
+          }}
+        >
+          <button
+            title="Sing In to Explore"
+            type="submit"
+            className="cursor-pointer text-lg flex items-center gap-4 px-8 py-3 bg-black text-white rounded-full transition-colors duration-700 hover:bg-gray-800 active:bg-gray-900"
+          >
+            <span>Sing In to Explore</span>
+            <Icon icon="solar:arrow-right-linear" fontSize={24}></Icon>
+          </button>
+        </form>
+      )}
+
       <Image
         src="/radiologist.png"
         width="1000"

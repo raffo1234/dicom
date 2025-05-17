@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 export async function middleware(request: NextRequest) {
   const session = await auth();
   const isAuthenticated = !!session;
-  console.log("session =====>>>>>", session);
+
   if (request.nextUrl.pathname.startsWith("/admin") && !isAuthenticated) {
     return NextResponse.redirect(new URL("/", request.url));
   }

@@ -25,7 +25,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user && profile) {
         await syncUserWithDatabase(user, profile);
       }
-
+      
       return true;
     },
   },
